@@ -3,7 +3,8 @@ import {
   Plus, Upload, Search, Edit3, Trash2, Save, X, FileText, Loader2, Download,
   Copy, Eye, Printer, ChevronDown, Palette, Layout, Info, HelpCircle,
   IndianRupee, Building2, Phone, Mail, MapPin, Hash, Calendar, Percent,
-  Package, FileDown, CheckCircle2, AlertCircle, Sparkles
+  Package, FileDown, CheckCircle2, AlertCircle, Sparkles, GripVertical,
+  ArrowUp, ArrowDown, RotateCcw
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -186,6 +187,9 @@ export default function AdminInvoices() {
   const [customBg, setCustomBg] = useState<string | null>(null);
   const [showHsnSuggestions, setShowHsnSuggestions] = useState<number | null>(null);
   const [tab, setTab] = useState<'details' | 'items' | 'tax' | 'notes'>('details');
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const fileRef = useRef<HTMLInputElement>(null);
   const bgRef = useRef<HTMLInputElement>(null);
 
@@ -278,6 +282,24 @@ export default function AdminInvoices() {
     const dup = { ...items[index], id: undefined };
     recalc([...items.slice(0, index + 1), dup, ...items.slice(index + 1)], editing || {});
   };
+  const moveItem = (from: number, to: number) => {
+    if (to < 0 || to >= items.length) return;
+    const updated = [...items];
+    const [moved] = updated.splice(from, 1);
+    updated.splice(to, 0, moved);
+    recalc(updated, editing || {});
+  };
+
+  // ─── Drag & Drop ────────────────────────────────────
+  const handleDragStart = (index: number) => setDragIndex(index);
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragIndex !== null && dragIndex !== index) {
+      moveItem(dragIndex, index);
+      setDragIndex(index);
+    }
+  };
+  const handleDragEnd = () => setDragIndex(null);
 
   // ─── Save ───────────────────────────────────────────
   const handleSave = async () => {
@@ -374,6 +396,27 @@ export default function AdminInvoices() {
     setItems((data as any) || []);
     setPreviewMode(false);
     setTab('details');
+  };
+
+  const duplicateInvoice = (inv: Invoice) => {
+    setEditing({
+      ...inv,
+      id: undefined as any,
+      invoice_number: generateNumber(inv.invoice_type),
+      status: 'draft',
+      created_at: null,
+    });
+    supabase.from('invoice_items').select('*').eq('invoice_id', inv.id).order('sort_order').then(({ data }) => {
+      setItems(((data as any) || []).map((i: any) => ({ ...i, id: undefined })));
+    });
+    setPreviewMode(false);
+    setTab('details');
+    toast.info('Duplicated — edit and save as new');
+  };
+
+  const viewInvoicePreview = async (inv: Invoice) => {
+    await loadInvoiceForEdit(inv);
+    setPreviewMode(true);
   };
 
   // ─── PDF Import ─────────────────────────────────────
@@ -504,7 +547,7 @@ export default function AdminInvoices() {
     toast.info('Generating PDF...');
     try {
       const canvas = await html2canvas(el, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -534,23 +577,15 @@ export default function AdminInvoices() {
   };
 
   // ═══════════════════════════════════════════════════
-  // PREVIEW RENDER
+  // PREVIEW RENDER — uses actual uploaded images
   // ═══════════════════════════════════════════════════
-  const BRAND_PARTNERS = [
-    'Astral Pipes', 'Finolex', 'Anchor', 'Hindware', 'CERA', 'Simpolo', 'Somany',
-    'Hi-Fi', 'Roff', 'TruFlo', 'UltraTech', 'Jaquar', 'AGL', 'Kohler', 'Kajaria'
-  ];
-
   const renderPreview = () => {
     const t = template;
     const useBrandedLayout = t === 'branded';
-    const borderColor = t === 'modern' ? 'border-primary' : t === 'branded' ? 'border-[#00bcd4]' : 'border-border';
-    const headerBg = t === 'branded' ? '' :
-                     t === 'modern' ? 'bg-gradient-to-r from-slate-900 to-slate-700 text-white' :
-                     t === 'professional' ? 'bg-muted' : '';
 
     return (
       <div className="max-w-3xl mx-auto">
+        {/* Toolbar */}
         <div className="flex flex-wrap gap-2 mb-4 print:hidden">
           <button onClick={() => setPreviewMode(false)} className="flex items-center gap-1.5 px-4 py-2 bg-muted rounded-xl text-sm hover:bg-accent transition-colors"><X size={14} /> Edit</button>
           <button onClick={downloadPDF} className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm hover:bg-emerald-700 transition-all"><Download size={14} /> Download PDF</button>
@@ -575,185 +610,227 @@ export default function AdminInvoices() {
           </div>
         )}
 
-        {/* Invoice Preview */}
+        {/* ─── INVOICE DOCUMENT ─── */}
         <div
-          className={`bg-white rounded-2xl shadow-xl border-2 ${borderColor} overflow-hidden print:shadow-none print:border-none print:rounded-none relative`}
+          className="bg-white shadow-xl overflow-hidden print:shadow-none print:rounded-none relative"
           id="invoice-print"
+          style={{ width: '794px', minHeight: '1122px', aspectRatio: '794/1122', margin: '0 auto' }}
         >
-          {/* Custom background at full visibility */}
+          {/* Custom BG — full visibility behind everything */}
           {customBg && (
-            <div className="absolute inset-0 z-0">
-              <img src={customBg} alt="" className="w-full h-full object-contain" />
-            </div>
+            <img src={customBg} alt="" className="absolute inset-0 w-full h-full object-cover z-0" style={{ opacity: 1 }} />
           )}
 
-          {/* Watermark for branded (if no custom bg) */}
-          {useBrandedLayout && !customBg && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.04]">
-              <img src="/images/sw-logo.png" alt="" className="w-[280px] h-auto" />
-            </div>
-          )}
+          {useBrandedLayout ? (
+            /* ═══ BRANDED TEMPLATE — 3 fixed image layers ═══ */
+            <div className="relative w-full h-full flex flex-col" style={{ minHeight: '1122px' }}>
+              {/* Layer 1: Header image (fixed at top) */}
+              <div className="relative z-10 shrink-0">
+                <img src="/images/invoice-header.png" alt="" className="w-full h-auto block" />
+              </div>
 
-          <div className="relative z-10 flex flex-col" style={{ minHeight: '1122px', aspectRatio: '794/1122' }}>
-            {/* ─── HEADER ─── */}
-            {useBrandedLayout ? (
-              <div className="p-6 sm:p-8">
-                <div className="flex justify-between items-start">
+              {/* Layer 2: Watermark (centered, behind content) */}
+              <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
+                <img src="/images/invoice-watermark.png" alt="" className="w-[60%] h-auto opacity-100" />
+              </div>
+
+              {/* Layer 3: Content zone (middle — never overlaps header/footer) */}
+              <div className="relative z-10 flex-1 px-10 py-4" style={{ minHeight: 0 }}>
+                {/* Document Type & Info Row */}
+                <div className="flex justify-between items-start mb-5 pb-3 border-b-2 border-[#00bcd4]/40">
                   <div>
-                    <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 leading-none">STONE</h2>
-                    <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 leading-none">WORLD</h2>
-                  </div>
-                  <div className="text-right flex flex-col items-end gap-1">
-                    <img src="/images/sw-logo.png" alt="Stone World" className="h-12 sm:h-14" />
-                    <p className="text-[10px] text-slate-500 font-medium tracking-wide">STONE-WORLD.IN</p>
-                  </div>
-                </div>
-                {/* Document type & number below header */}
-                <div className="mt-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b-2 border-[#00bcd4]/30">
-                  <div>
-                    <h1 className="text-xl font-black uppercase tracking-widest text-[#00bcd4]">
+                    <h1 className="text-xl font-black uppercase tracking-[0.2em] text-[#00838f]">
                       {INVOICE_TYPES.find(x => x.value === editing?.invoice_type)?.label || 'Quotation'}
                     </h1>
-                    <p className="text-sm font-semibold text-slate-700 mt-0.5">{editing?.invoice_number}</p>
+                    <p className="text-xs font-semibold text-slate-600 mt-0.5">{editing?.invoice_number}</p>
                   </div>
-                  <div className="text-left sm:text-right text-[11px] text-slate-500">
-                    <p>Date: {new Date().toLocaleDateString('en-IN')}</p>
-                    {editing?.due_date && <p>Due: {new Date(editing.due_date).toLocaleDateString('en-IN')}</p>}
-                    <p>GSTIN: {editing?.company_gstin}</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className={`p-6 sm:p-8 ${headerBg}`}>
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                  <div className="flex items-center gap-3">
-                    {t === 'professional' && <img src="/images/sw-logo.png" alt="Stone World" className="h-12 sm:h-14" />}
-                    <div>
-                      <h2 className={`text-lg sm:text-xl font-bold ${t === 'minimal' ? 'text-foreground' : ''}`}>{COMPANY_INFO.name}</h2>
-                      <p className={`text-[11px] ${t === 'minimal' || t === 'professional' ? 'text-muted-foreground' : 'text-white/70'}`}>{COMPANY_INFO.address}</p>
-                      <p className={`text-[11px] ${t === 'minimal' || t === 'professional' ? 'text-muted-foreground' : 'text-white/70'}`}>{COMPANY_INFO.phone} | {COMPANY_INFO.email}</p>
-                      <p className={`text-[11px] ${t === 'minimal' || t === 'professional' ? 'text-muted-foreground' : 'text-white/70'}`}>GSTIN: {editing?.company_gstin}</p>
-                    </div>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <h1 className={`text-xl sm:text-2xl font-black uppercase tracking-widest ${t === 'minimal' ? 'text-foreground' : ''}`}>
-                      {INVOICE_TYPES.find(x => x.value === editing?.invoice_type)?.label || 'Quotation'}
-                    </h1>
-                    <p className={`text-sm font-semibold mt-1 ${t === 'minimal' || t === 'professional' ? 'text-foreground' : ''}`}>{editing?.invoice_number}</p>
-                    <p className={`text-[11px] ${t === 'minimal' || t === 'professional' ? 'text-muted-foreground' : 'text-white/60'}`}>Date: {new Date().toLocaleDateString('en-IN')}</p>
-                    {editing?.due_date && <p className={`text-[11px] ${t === 'minimal' || t === 'professional' ? 'text-muted-foreground' : 'text-white/60'}`}>Due: {new Date(editing.due_date).toLocaleDateString('en-IN')}</p>}
+                  <div className="text-right text-[11px] text-slate-500 leading-relaxed">
+                    <p>Date: <span className="font-medium text-slate-700">{new Date(editing?.created_at || Date.now()).toLocaleDateString('en-IN')}</span></p>
+                    {editing?.due_date && <p>Due: <span className="font-medium text-slate-700">{new Date(editing.due_date).toLocaleDateString('en-IN')}</span></p>}
+                    <p>GSTIN: <span className="font-medium text-slate-700">{editing?.company_gstin}</span></p>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* ─── CONTENT ZONE (middle) ─── */}
-            <div className="flex-1 px-6 sm:px-8">
-              {/* Customer Info */}
-              <div className="py-4">
-                <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl ${customBg ? '' : 'bg-slate-50/80'}`}>
+                {/* Customer Info */}
+                <div className="grid grid-cols-2 gap-6 mb-5">
                   <div>
-                    <p className="text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Bill To</p>
-                    <p className="font-bold text-sm text-slate-800">{editing?.customer_name}</p>
-                    {editing?.customer_address && <p className="text-xs text-slate-500 mt-0.5">{editing.customer_address}</p>}
-                    {editing?.customer_gstin && <p className="text-xs text-slate-500">GSTIN: {editing.customer_gstin}</p>}
-                    {editing?.customer_phone && <p className="text-xs text-slate-500">{editing.customer_phone}</p>}
-                    {editing?.customer_email && <p className="text-xs text-slate-500">{editing.customer_email}</p>}
+                    <p className="text-[9px] uppercase font-black text-[#00bcd4] mb-1 tracking-[0.15em]">Bill To</p>
+                    <p className="font-bold text-[13px] text-slate-800">{editing?.customer_name}</p>
+                    {editing?.customer_address && <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{editing.customer_address}</p>}
+                    {editing?.customer_gstin && <p className="text-[11px] text-slate-500">GSTIN: {editing.customer_gstin}</p>}
+                    {editing?.customer_phone && <p className="text-[11px] text-slate-500">{editing.customer_phone}</p>}
+                    {editing?.customer_email && <p className="text-[11px] text-slate-500">{editing.customer_email}</p>}
                   </div>
                   <div>
                     {editing?.shipping_address ? (
                       <>
-                        <p className="text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Ship To</p>
-                        <p className="text-xs text-slate-500">{editing.shipping_address}</p>
+                        <p className="text-[9px] uppercase font-black text-[#00bcd4] mb-1 tracking-[0.15em]">Ship To</p>
+                        <p className="text-[11px] text-slate-500 leading-relaxed">{editing.shipping_address}</p>
                       </>
                     ) : (
                       <>
-                        <p className="text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">From</p>
-                        <p className="font-bold text-xs text-slate-700">{COMPANY_INFO.name}</p>
-                        <p className="text-xs text-slate-500">{COMPANY_INFO.address}</p>
-                        <p className="text-xs text-slate-500">{COMPANY_INFO.phone}</p>
+                        <p className="text-[9px] uppercase font-black text-[#00bcd4] mb-1 tracking-[0.15em]">From</p>
+                        <p className="font-bold text-[11px] text-slate-700">{COMPANY_INFO.name}</p>
+                        <p className="text-[11px] text-slate-500">{COMPANY_INFO.address}</p>
+                        <p className="text-[11px] text-slate-500">{COMPANY_INFO.phone} | {COMPANY_INFO.email}</p>
                       </>
                     )}
                   </div>
                 </div>
-              </div>
 
-              {/* Items Table */}
-              <div className="pb-4 overflow-x-auto">
-                <table className="w-full text-sm min-w-[500px]">
+                {/* Items Table */}
+                <table className="w-full text-[11px] mb-4">
                   <thead>
-                    <tr className={`${useBrandedLayout ? (customBg ? 'text-[#00838f]' : 'bg-[#00bcd4]/10 text-[#00838f]') : t === 'modern' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                      <th className="text-left py-2.5 px-3 font-semibold rounded-l-lg text-[11px]">#</th>
-                      <th className="text-left py-2.5 px-3 font-semibold text-[11px]">Description</th>
-                      <th className="text-left py-2.5 px-3 font-semibold text-[11px]">HSN</th>
-                      <th className="text-right py-2.5 px-3 font-semibold text-[11px]">Qty</th>
-                      <th className="text-right py-2.5 px-3 font-semibold text-[11px]">Rate (₹)</th>
-                      <th className="text-right py-2.5 px-3 font-semibold rounded-r-lg text-[11px]">Amount (₹)</th>
+                    <tr className="bg-[#00bcd4]/10 text-[#00838f]">
+                      <th className="text-left py-2 px-2 font-bold rounded-l-md w-8">#</th>
+                      <th className="text-left py-2 px-2 font-bold">Description</th>
+                      <th className="text-left py-2 px-2 font-bold w-14">HSN</th>
+                      <th className="text-right py-2 px-2 font-bold w-16">Qty</th>
+                      <th className="text-right py-2 px-2 font-bold w-20">Rate</th>
+                      <th className="text-right py-2 px-2 font-bold rounded-r-md w-24">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((item, i) => (
-                      <tr key={i} className="border-b border-slate-100 last:border-0">
-                        <td className="py-2.5 px-3 text-slate-400 text-xs">{i + 1}</td>
-                        <td className="py-2.5 px-3 font-medium text-slate-800 text-xs">{item.description}</td>
-                        <td className="py-2.5 px-3 text-slate-400 text-xs">{item.hsn_code}</td>
-                        <td className="py-2.5 px-3 text-right text-slate-600 text-xs">{item.quantity} {item.unit}</td>
-                        <td className="py-2.5 px-3 text-right text-slate-600 text-xs">{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        <td className="py-2.5 px-3 text-right font-semibold text-slate-800 text-xs">{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                      <tr key={i} className="border-b border-slate-100">
+                        <td className="py-1.5 px-2 text-slate-400">{i + 1}</td>
+                        <td className="py-1.5 px-2 font-medium text-slate-800">{item.description}</td>
+                        <td className="py-1.5 px-2 text-slate-400">{item.hsn_code}</td>
+                        <td className="py-1.5 px-2 text-right text-slate-600">{item.quantity} {item.unit}</td>
+                        <td className="py-1.5 px-2 text-right text-slate-600">₹{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                        <td className="py-1.5 px-2 text-right font-semibold text-slate-800">₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
 
-              {/* Totals */}
-              <div className="pb-4">
-                <div className="flex justify-end">
-                  <div className="w-full sm:w-72 space-y-1.5 text-sm">
+                {/* Totals */}
+                <div className="flex justify-end mb-3">
+                  <div className="w-64 space-y-1 text-[11px]">
                     <div className="flex justify-between text-slate-500"><span>Subtotal</span><span className="font-medium text-slate-700">₹{(editing?.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
                     {(editing?.discount_amount || 0) > 0 && <div className="flex justify-between text-rose-500"><span>Discount ({editing?.discount_percent}%)</span><span>-₹{(editing?.discount_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
                     {(editing?.cgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>CGST ({editing?.cgst_rate}%)</span><span>₹{(editing?.cgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
                     {(editing?.sgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>SGST ({editing?.sgst_rate}%)</span><span>₹{(editing?.sgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
                     {(editing?.igst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>IGST ({editing?.igst_rate}%)</span><span>₹{(editing?.igst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                    <div className={`flex justify-between font-bold text-lg pt-2 mt-1 border-t-2 ${useBrandedLayout ? 'border-[#00bcd4] text-slate-900' : t === 'modern' ? 'border-slate-800 text-slate-900' : 'border-slate-300 text-slate-800'}`}>
+                    <div className="flex justify-between font-bold text-sm pt-1.5 mt-1 border-t-2 border-[#00bcd4] text-slate-900">
                       <span>Grand Total</span><span>₹{(editing?.grand_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 </div>
-                {editing?.amount_in_words && <p className="text-[11px] mt-3 italic text-slate-400">Amount in words: {editing.amount_in_words}</p>}
+                {editing?.amount_in_words && <p className="text-[10px] italic text-slate-400 mb-3">Amount in words: {editing.amount_in_words}</p>}
+
+                {/* Terms & Notes */}
+                {(editing?.terms || editing?.notes || editing?.payment_terms) && (
+                  <div className="pt-3 border-t border-slate-100 space-y-2">
+                    {editing?.payment_terms && <p className="text-[10px] text-slate-500"><span className="font-bold uppercase text-slate-400">Payment: </span>{editing.payment_terms}</p>}
+                    {editing?.terms && <div><p className="text-[9px] font-black uppercase text-slate-400 mb-0.5">Terms & Conditions</p><p className="text-[10px] text-slate-500 whitespace-pre-wrap leading-relaxed">{editing.terms}</p></div>}
+                    {editing?.notes && <div><p className="text-[9px] font-black uppercase text-slate-400 mb-0.5">Notes</p><p className="text-[10px] text-slate-500 whitespace-pre-wrap">{editing.notes}</p></div>}
+                  </div>
+                )}
               </div>
 
-              {/* Terms & Notes */}
-              {(editing?.terms || editing?.notes || editing?.payment_terms) && (
-                <div className="py-4 border-t border-slate-100">
-                  {editing?.payment_terms && <p className="text-[11px] text-slate-500 mb-2"><span className="font-semibold uppercase text-slate-400">Payment: </span>{editing.payment_terms}</p>}
-                  {editing?.terms && <div className="mb-2"><p className="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Terms & Conditions</p><p className="text-[11px] text-slate-500 whitespace-pre-wrap">{editing.terms}</p></div>}
-                  {editing?.notes && <div><p className="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Notes</p><p className="text-[11px] text-slate-500 whitespace-pre-wrap">{editing.notes}</p></div>}
-                </div>
-              )}
+              {/* Layer 4: Footer image (fixed at bottom) */}
+              <div className="relative z-10 shrink-0 mt-auto">
+                <img src="/images/invoice-bottom.png" alt="" className="w-full h-auto block" />
+              </div>
             </div>
-
-            {/* ─── FOOTER (fixed at bottom) ─── */}
-            {useBrandedLayout ? (
-              <div className="mt-auto">
-                <div className="text-center py-3">
-                  <p className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-700">One Stop Solution!</p>
-                </div>
-                <div className="border-t-2 border-dashed border-slate-300 mx-6" />
-                <div className="px-6 py-3">
-                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5">
-                    {BRAND_PARTNERS.map(bp => (
-                      <span key={bp} className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{bp}</span>
-                    ))}
+          ) : (
+            /* ═══ OTHER TEMPLATES ═══ */
+            <div className="relative z-10 flex flex-col" style={{ minHeight: '1122px' }}>
+              {/* Header */}
+              <div className={`p-8 ${t === 'modern' ? 'bg-gradient-to-r from-slate-900 to-slate-700 text-white' : t === 'professional' ? 'bg-muted' : ''}`}>
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    {t === 'professional' && <img src="/images/sw-logo.png" alt="Stone World" className="h-14" />}
+                    <div>
+                      <h2 className={`text-xl font-bold ${t === 'minimal' ? 'text-foreground' : ''}`}>{COMPANY_INFO.name}</h2>
+                      <p className={`text-[11px] ${t === 'minimal' || t === 'professional' ? 'text-muted-foreground' : 'text-white/70'}`}>{COMPANY_INFO.address}</p>
+                      <p className={`text-[11px] ${t === 'minimal' || t === 'professional' ? 'text-muted-foreground' : 'text-white/70'}`}>{COMPANY_INFO.phone} | {COMPANY_INFO.email}</p>
+                      <p className={`text-[11px] ${t === 'minimal' || t === 'professional' ? 'text-muted-foreground' : 'text-white/70'}`}>GSTIN: {editing?.company_gstin}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <h1 className={`text-2xl font-black uppercase tracking-widest ${t === 'minimal' ? 'text-foreground' : ''}`}>
+                      {INVOICE_TYPES.find(x => x.value === editing?.invoice_type)?.label || 'Quotation'}
+                    </h1>
+                    <p className={`text-sm font-semibold mt-1 ${t === 'minimal' || t === 'professional' ? 'text-foreground' : ''}`}>{editing?.invoice_number}</p>
+                    <p className={`text-[11px] ${t === 'minimal' || t === 'professional' ? 'text-muted-foreground' : 'text-white/60'}`}>Date: {new Date().toLocaleDateString('en-IN')}</p>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="mt-auto px-6 sm:px-8 py-3 text-center text-[10px] text-slate-400 border-t border-slate-100">
+
+              {/* Content */}
+              <div className="flex-1 px-8">
+                <div className="py-4 grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50/80">
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Bill To</p>
+                    <p className="font-bold text-sm text-slate-800">{editing?.customer_name}</p>
+                    {editing?.customer_address && <p className="text-xs text-slate-500 mt-0.5">{editing.customer_address}</p>}
+                    {editing?.customer_gstin && <p className="text-xs text-slate-500">GSTIN: {editing.customer_gstin}</p>}
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">From</p>
+                    <p className="font-bold text-xs text-slate-700">{COMPANY_INFO.name}</p>
+                    <p className="text-xs text-slate-500">{COMPANY_INFO.address}</p>
+                  </div>
+                </div>
+
+                <div className="py-4 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className={t === 'modern' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}>
+                        <th className="text-left py-2.5 px-3 font-semibold rounded-l-lg text-[11px]">#</th>
+                        <th className="text-left py-2.5 px-3 font-semibold text-[11px]">Description</th>
+                        <th className="text-left py-2.5 px-3 font-semibold text-[11px]">HSN</th>
+                        <th className="text-right py-2.5 px-3 font-semibold text-[11px]">Qty</th>
+                        <th className="text-right py-2.5 px-3 font-semibold text-[11px]">Rate (₹)</th>
+                        <th className="text-right py-2.5 px-3 font-semibold rounded-r-lg text-[11px]">Amount (₹)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item, i) => (
+                        <tr key={i} className="border-b border-slate-100">
+                          <td className="py-2.5 px-3 text-slate-400 text-xs">{i + 1}</td>
+                          <td className="py-2.5 px-3 font-medium text-slate-800 text-xs">{item.description}</td>
+                          <td className="py-2.5 px-3 text-slate-400 text-xs">{item.hsn_code}</td>
+                          <td className="py-2.5 px-3 text-right text-slate-600 text-xs">{item.quantity} {item.unit}</td>
+                          <td className="py-2.5 px-3 text-right text-slate-600 text-xs">{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          <td className="py-2.5 px-3 text-right font-semibold text-slate-800 text-xs">{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="pb-4 flex justify-end">
+                  <div className="w-72 space-y-1.5 text-sm">
+                    <div className="flex justify-between text-slate-500"><span>Subtotal</span><span className="font-medium text-slate-700">₹{(editing?.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                    {(editing?.discount_amount || 0) > 0 && <div className="flex justify-between text-rose-500"><span>Discount ({editing?.discount_percent}%)</span><span>-₹{(editing?.discount_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                    {(editing?.cgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>CGST ({editing?.cgst_rate}%)</span><span>₹{(editing?.cgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                    {(editing?.sgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>SGST ({editing?.sgst_rate}%)</span><span>₹{(editing?.sgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                    {(editing?.igst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>IGST ({editing?.igst_rate}%)</span><span>₹{(editing?.igst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                    <div className={`flex justify-between font-bold text-lg pt-2 mt-1 border-t-2 ${t === 'modern' ? 'border-slate-800' : 'border-slate-300'} text-slate-800`}>
+                      <span>Grand Total</span><span>₹{(editing?.grand_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                </div>
+                {editing?.amount_in_words && <p className="text-[11px] italic text-slate-400 mb-3">Amount in words: {editing.amount_in_words}</p>}
+
+                {(editing?.terms || editing?.notes || editing?.payment_terms) && (
+                  <div className="py-4 border-t border-slate-100">
+                    {editing?.payment_terms && <p className="text-[11px] text-slate-500 mb-2"><span className="font-semibold uppercase text-slate-400">Payment: </span>{editing.payment_terms}</p>}
+                    {editing?.terms && <div className="mb-2"><p className="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Terms & Conditions</p><p className="text-[11px] text-slate-500 whitespace-pre-wrap">{editing.terms}</p></div>}
+                    {editing?.notes && <div><p className="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Notes</p><p className="text-[11px] text-slate-500 whitespace-pre-wrap">{editing.notes}</p></div>}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="mt-auto px-8 py-3 text-center text-[10px] text-slate-400 border-t border-slate-100">
                 Thank you for choosing Stone World — Quality Matters the MOST!
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -830,6 +907,12 @@ export default function AdminInvoices() {
                   <input type="date" value={editing.due_date || ''} onChange={e => setEditing({ ...editing, due_date: e.target.value })} className={inputCls} />
                 </Field>
               </div>
+              <Field label="Company GSTIN">
+                <input value={editing.company_gstin || ''} onChange={e => setEditing({ ...editing, company_gstin: e.target.value })} className={inputCls} />
+              </Field>
+              <Field label="Billing Address">
+                <textarea value={editing.billing_address || ''} onChange={e => setEditing({ ...editing, billing_address: e.target.value })} rows={2} className={inputCls + ' resize-none'} />
+              </Field>
             </div>
 
             <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/30">
@@ -860,7 +943,7 @@ export default function AdminInvoices() {
           </div>
         )}
 
-        {/* Tab: Items */}
+        {/* Tab: Items — with drag & drop */}
         {tab === 'items' && (
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
@@ -869,10 +952,22 @@ export default function AdminInvoices() {
             </div>
 
             {items.map((item, i) => (
-              <div key={i} className="bg-card rounded-2xl border border-border/30 p-4 space-y-3">
+              <div
+                key={i}
+                draggable
+                onDragStart={() => handleDragStart(i)}
+                onDragOver={e => handleDragOver(e, i)}
+                onDragEnd={handleDragEnd}
+                className={`bg-card rounded-2xl border border-border/30 p-4 space-y-3 transition-all ${dragIndex === i ? 'opacity-50 scale-[0.98]' : ''}`}
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-muted-foreground/60">ITEM {i + 1}</span>
+                  <div className="flex items-center gap-2">
+                    <GripVertical size={14} className="text-muted-foreground/40 cursor-grab active:cursor-grabbing" />
+                    <span className="text-[11px] font-bold text-muted-foreground/60">ITEM {i + 1}</span>
+                  </div>
                   <div className="flex gap-1">
+                    <button onClick={() => moveItem(i, i - 1)} disabled={i === 0} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors disabled:opacity-30" title="Move up"><ArrowUp size={12} /></button>
+                    <button onClick={() => moveItem(i, i + 1)} disabled={i === items.length - 1} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors disabled:opacity-30" title="Move down"><ArrowDown size={12} /></button>
                     <button onClick={() => duplicateItem(i)} className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors" title="Duplicate"><Copy size={12} /></button>
                     <button onClick={() => removeItem(i)} className="p-1.5 text-destructive/60 hover:text-destructive rounded-lg hover:bg-destructive/5 transition-colors" title="Remove"><Trash2 size={12} /></button>
                   </div>
@@ -907,12 +1002,15 @@ export default function AdminInvoices() {
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   <Field label="Quantity">
                     <input type="number" value={item.quantity} onChange={e => updateItem(i, 'quantity', +e.target.value || 0)} min={0} className={inputCls} />
                   </Field>
                   <Field label="Rate (₹)">
                     <input type="number" value={item.rate} onChange={e => updateItem(i, 'rate', +e.target.value || 0)} min={0} className={inputCls} />
+                  </Field>
+                  <Field label="Disc %">
+                    <input type="number" value={item.discount_percent} onChange={e => updateItem(i, 'discount_percent', +e.target.value || 0)} min={0} max={100} className={inputCls} />
                   </Field>
                   <Field label="Tax %">
                     <select value={item.tax_rate} onChange={e => updateItem(i, 'tax_rate', +e.target.value)} className={selectCls}>
@@ -921,7 +1019,7 @@ export default function AdminInvoices() {
                   </Field>
                   <Field label="Amount">
                     <div className="flex items-center h-[42px] px-3 bg-muted/30 rounded-xl text-sm font-semibold text-foreground">
-                      ₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      ₹{item.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
                   </Field>
                 </div>
@@ -993,7 +1091,7 @@ export default function AdminInvoices() {
                 <textarea value={editing.terms || ''} onChange={e => setEditing({ ...editing, terms: e.target.value })}
                   rows={6} placeholder="Enter terms and conditions..." className={inputCls + ' resize-none'} />
               </Field>
-              <button onClick={() => setEditing({ ...editing, terms: DEFAULT_TERMS })} className="text-[11px] text-primary hover:underline flex items-center gap-1"><Sparkles size={11} /> Load default terms</button>
+              <button onClick={() => setEditing({ ...editing, terms: DEFAULT_TERMS })} className="text-[11px] text-primary hover:underline flex items-center gap-1"><RotateCcw size={11} /> Load default terms</button>
             </div>
             <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/30">
               <Field label="Internal Notes">
@@ -1043,7 +1141,10 @@ export default function AdminInvoices() {
   // ═══════════════════════════════════════════════════
   const filtered = invoices.filter(inv => {
     const s = search.toLowerCase();
-    return !s || inv.customer_name.toLowerCase().includes(s) || inv.invoice_number.toLowerCase().includes(s);
+    const matchSearch = !s || inv.customer_name.toLowerCase().includes(s) || inv.invoice_number.toLowerCase().includes(s);
+    const matchType = filterType === 'all' || inv.invoice_type === filterType;
+    const matchStatus = filterStatus === 'all' || inv.status === filterStatus;
+    return matchSearch && matchType && matchStatus;
   });
 
   return (
@@ -1070,11 +1171,21 @@ export default function AdminInvoices() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search by customer or invoice number..." className="w-full pl-10 pr-4 py-2.5 bg-muted/50 border border-border/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+      {/* Search & Filters */}
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search by customer or invoice number..." className="w-full pl-10 pr-4 py-2.5 bg-muted/50 border border-border/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="px-3 py-2.5 bg-muted/50 border border-border/30 rounded-xl text-sm">
+          <option value="all">All Types</option>
+          {INVOICE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2.5 bg-muted/50 border border-border/30 rounded-xl text-sm">
+          <option value="all">All Status</option>
+          {['draft', 'sent', 'paid', 'cancelled'].map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+        </select>
       </div>
 
       {/* List */}
@@ -1115,7 +1226,9 @@ export default function AdminInvoices() {
                 </div>
                 <p className="font-bold text-sm shrink-0">₹{(inv.grand_total || 0).toLocaleString('en-IN')}</p>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <button onClick={() => viewInvoicePreview(inv)} className="p-2 hover:bg-muted rounded-xl transition-colors" title="Preview & Download"><Eye size={13} /></button>
                   <button onClick={() => loadInvoiceForEdit(inv)} className="p-2 hover:bg-muted rounded-xl transition-colors" title="Edit"><Edit3 size={13} /></button>
+                  <button onClick={() => duplicateInvoice(inv)} className="p-2 hover:bg-muted rounded-xl transition-colors" title="Duplicate"><Copy size={13} /></button>
                   <button onClick={() => exportTallyXML(inv)} className="p-2 hover:bg-muted rounded-xl transition-colors" title="Tally XML"><FileDown size={13} /></button>
                   <button onClick={() => handleDelete(inv.id)} className="p-2 text-destructive/60 hover:text-destructive hover:bg-destructive/5 rounded-xl transition-colors" title="Delete"><Trash2 size={13} /></button>
                 </div>
