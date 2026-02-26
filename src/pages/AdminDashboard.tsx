@@ -10,6 +10,8 @@ import AdminOverview from '@/components/admin/AdminOverview';
 import AdminInquiries from '@/components/admin/AdminInquiries';
 import AdminProducts from '@/components/admin/AdminProducts';
 import AdminInvoices from '@/components/admin/AdminInvoices';
+import AdminBlog from '@/components/admin/AdminBlog';
+import AdminSettings from '@/components/admin/AdminSettings';
 
 interface Inquiry {
   id: string;
@@ -68,6 +70,8 @@ export default function AdminDashboard() {
     inquiries: 'Inquiries',
     products: 'Products',
     invoices: 'Invoices',
+    blog: 'Blog',
+    settings: 'Settings',
   };
 
   return (
@@ -111,6 +115,8 @@ export default function AdminDashboard() {
           )}
           {view === 'products' && <AdminProducts />}
           {view === 'invoices' && <AdminInvoices />}
+          {view === 'blog' && <AdminBlog />}
+          {view === 'settings' && <AdminSettings />}
         </div>
       </main>
     </div>
