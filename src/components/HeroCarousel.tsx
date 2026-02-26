@@ -145,7 +145,7 @@ export default function HeroCarousel() {
               <Link
                 to={slide.link}
                 data-testid="hero-explore-btn"
-                className="btn-gold text-sm"
+                className="inline-flex items-center gap-2 text-sm font-medium px-7 py-3.5 rounded-full bg-white text-black transition-all duration-300 hover:bg-white/90 hover:shadow-lg active:scale-[0.97]"
               >
                 {slide.cta} <ArrowRight size={14} />
               </Link>
