@@ -9,6 +9,7 @@ import { getProducts, getSiteInfo } from '@/utils/api';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import type { Product, SiteInfo } from '@/utils/mockData';
 
+/* ── Animated counter ── */
 function AnimatedNumber({ value, suffix = '' }: { value: string; suffix?: string }) {
   const [display, setDisplay] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
@@ -30,12 +31,16 @@ function AnimatedNumber({ value, suffix = '' }: { value: string; suffix?: string
   return <span ref={ref}>{display}{value?.replace(/[0-9.]/g, '') || suffix}</span>;
 }
 
+/* ── Category cards ── */
 const CATEGORY_CARDS = [
   { label: 'Marble', desc: 'Italian & Indian luxury marble', image: 'https://images.unsplash.com/photo-1719107647328-dd2134da4fa7?w=600&q=80' },
   { label: 'Granite', desc: 'Enduring strength & beauty', image: 'https://images.unsplash.com/photo-1690229160941-ed70482540de?w=600&q=80' },
   { label: 'Tiles', desc: 'Infinite design possibilities', image: 'https://images.unsplash.com/photo-1714648775477-a15cc5aed21f?w=600&q=80' },
   { label: 'Quartz', desc: 'Zero maintenance luxury', image: 'https://images.unsplash.com/photo-1630756377422-7cfae60dd550?w=600&q=80' },
 ];
+
+/* ── Notable client logos (text-based for now) ── */
+const CLIENTS = ['IIM Ahmedabad', 'Motera Stadium', 'Zydus', 'Adani Group', 'Volkswagen', 'Taco Bell', 'HDFC Bank', 'Sun Pharma'];
 
 export default function Home() {
   const [featured, setFeatured] = useState<Product[]>([]);
@@ -56,55 +61,73 @@ export default function Home() {
   ];
 
   return (
-    <div className="bg-white overflow-x-hidden" data-testid="home-page">
+    <div className="bg-background overflow-x-hidden" data-testid="home-page">
       <Navbar />
       <HeroCarousel />
 
-      {/* Stats */}
-      <section className="py-16 md:py-20 px-6 bg-white" data-testid="stats-section">
+      {/* ── Marquee — trusted by ── */}
+      <section className="py-8 bg-sw-offwhite border-y border-sw-border/30 overflow-hidden">
+        <div className="flex items-center gap-12 animate-[marquee_30s_linear_infinite] whitespace-nowrap">
+          {[...CLIENTS, ...CLIENTS, ...CLIENTS].map((c, i) => (
+            <span key={`${c}-${i}`} className="text-sw-gray/40 text-xs font-semibold tracking-widest uppercase shrink-0">
+              {c}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Stats — Apple-style full-bleed numbers ── */}
+      <section className="py-20 md:py-28 px-6 bg-background" data-testid="stats-section">
         <div className="container-sw">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center text-sw-gray text-[11px] tracking-[0.25em] uppercase font-semibold mb-12"
+          >
+            Our Story in Numbers
+          </motion.p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {STATS.map(({ value, label }, i) => (
-              <motion.div key={label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.6 }}
+              <motion.div key={label} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
                 className="text-center">
-                <div className="font-semibold tracking-tight text-stone-900" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+                <div className="font-semibold tracking-tight text-foreground" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', letterSpacing: '-0.04em' }}>
                   <AnimatedNumber value={value} />
                 </div>
-                <p className="text-stone-400 text-xs mt-1 tracking-wide">{label}</p>
+                <p className="text-muted-foreground text-xs mt-2 tracking-wider uppercase">{label}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* ── Featured Products — Editorial grid ── */}
       {featured.length > 0 && (
-        <section className="py-16 md:py-24 px-6 bg-stone-50" data-testid="featured-section">
+        <section className="py-20 md:py-28 px-6 bg-sw-offwhite" data-testid="featured-section">
           <div className="container-wide">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} className="text-center mb-12">
-              <p className="text-amber-600 text-[11px] uppercase tracking-[0.2em] font-semibold mb-3">Handpicked</p>
-              <h2 className="font-semibold text-stone-900 tracking-tight mb-2" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '-0.03em' }}>
+              viewport={{ once: true }} className="text-center mb-14">
+              <p className="text-sw-gold text-[11px] uppercase tracking-[0.25em] font-semibold mb-4">Handpicked</p>
+              <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}>
                 Featured Products.
               </h2>
-              <p className="text-stone-400 text-base md:text-lg max-w-md mx-auto">
-                Our most sought-after surface materials, curated by experts.
+              <p className="apple-subhead text-base md:text-lg max-w-md mx-auto">
+                Our most sought-after surface materials.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {featured.map((p, i) => (
-                <motion.div key={p.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
+                <motion.div key={p.id} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
                   <ProductCard product={p} onClick={setSelectedProduct} />
                 </motion.div>
               ))}
             </div>
 
-            <div className="mt-10 text-center">
-              <Link to="/products" data-testid="view-all-products-btn"
-                className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-stone-900 text-white text-sm font-medium hover:bg-stone-800 transition-colors">
+            <div className="mt-12 text-center">
+              <Link to="/products" data-testid="view-all-products-btn" className="btn-primary">
                 View All Products <ArrowRight size={14} />
               </Link>
             </div>
@@ -112,34 +135,34 @@ export default function Home() {
         </section>
       )}
 
-      {/* Categories */}
-      <section className="py-16 md:py-24 px-6 bg-white" data-testid="categories-section">
+      {/* ── Categories — Immersive cards ── */}
+      <section className="py-20 md:py-28 px-6 bg-background" data-testid="categories-section">
         <div className="container-wide">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} className="text-center mb-12">
-            <p className="text-amber-600 text-[11px] uppercase tracking-[0.2em] font-semibold mb-3">Collections</p>
-            <h2 className="font-semibold text-stone-900 tracking-tight mb-2" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '-0.03em' }}>
+            viewport={{ once: true }} className="text-center mb-14">
+            <p className="text-sw-gold text-[11px] uppercase tracking-[0.25em] font-semibold mb-4">Collections</p>
+            <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}>
               Explore by Category.
             </h2>
-            <p className="text-stone-400 text-base md:text-lg">From quarry to your door — every surface you need.</p>
+            <p className="apple-subhead text-base md:text-lg">From quarry to your door.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {CATEGORY_CARDS.map((cat, i) => (
-              <motion.div key={cat.label} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.6 }}>
+              <motion.div key={cat.label} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.7 }}>
                 <Link to={`/products?category=${encodeURIComponent(cat.label)}`}
-                  className="group relative block rounded-3xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                  className="group relative block rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
                   <img src={cat.image} alt={cat.label} loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent" />
+                    className="w-full h-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-500" />
                   <div className="absolute bottom-6 left-6">
                     <h3 className="text-white font-semibold text-xl tracking-tight">{cat.label}</h3>
-                    <p className="text-white/50 text-sm mt-1">{cat.desc}</p>
+                    <p className="text-white/40 text-sm mt-1">{cat.desc}</p>
                   </div>
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="inline-flex items-center gap-1 bg-white/15 backdrop-blur-md text-white text-xs font-medium px-3 py-1.5 rounded-full">
-                      Explore <ArrowUpRight size={11} />
+                  <div className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300">
+                    <span className="inline-flex items-center gap-1 bg-white/10 backdrop-blur-xl text-white text-[11px] font-medium px-4 py-2 rounded-full border border-white/10">
+                      Explore <ArrowUpRight size={10} />
                     </span>
                   </div>
                 </Link>
@@ -149,48 +172,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About */}
-      <section className="relative overflow-hidden bg-stone-950 text-center py-24 md:py-32 px-6" data-testid="about-section">
+      {/* ── Brand statement — full-bleed dark ── */}
+      <section className="relative overflow-hidden bg-sw-dark text-center py-28 md:py-40 px-6" data-testid="about-section">
         <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: 'radial-gradient(circle at 25% 50%, rgba(191,155,94,0.3) 0%, transparent 50%), radial-gradient(circle at 75% 50%, rgba(191,155,94,0.15) 0%, transparent 50%)'
+          backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(191,155,94,0.25) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(191,155,94,0.1) 0%, transparent 50%)'
         }} />
         <div className="container-sw relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.8 }}>
-            <Sparkles className="mx-auto mb-4 text-amber-400/60" size={28} />
-            <h2 className="font-semibold text-white leading-tight mb-4" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', letterSpacing: '-0.03em' }}>
+          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}>
+            <p className="text-sw-gold/60 text-[11px] uppercase tracking-[0.3em] font-semibold mb-8">Est. 2003</p>
+            <h2 className="font-semibold text-white leading-[1.05] mb-6" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', letterSpacing: '-0.04em' }}>
               Two decades of<br />
-              <span className="text-stone-500">surface excellence.</span>
+              <span className="text-gradient-gold">surface excellence.</span>
             </h2>
-            <p className="text-stone-400 text-base max-w-lg mx-auto leading-relaxed mb-8">
+            <p className="text-white/35 text-base md:text-lg max-w-lg mx-auto leading-relaxed mb-10">
               {siteInfo.about_short || "Founded in 2003, Stone World has grown to be Gujarat's most trusted name in premium surfaces and building materials."}
             </p>
-            <Link to="/about" data-testid="about-cta-btn"
-              className="inline-flex items-center gap-2 text-amber-400 text-sm font-medium hover:text-amber-300 transition-colors">
+            <Link to="/about" data-testid="about-cta-btn" className="link-gold">
               Learn more about us <ArrowRight size={14} />
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 md:py-28 px-6 bg-white" data-testid="cta-section">
+      {/* ── CTA — Clean final section ── */}
+      <section className="py-24 md:py-36 px-6 bg-background" data-testid="cta-section">
         <div className="container-sw text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.7 }}>
-            <h2 className="font-semibold text-stone-900 tracking-tight mb-3" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', letterSpacing: '-0.03em' }}>
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.8 }}>
+            <h2 className="apple-headline mb-4" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }}>
               Let's build something<br />beautiful together.
             </h2>
-            <p className="text-stone-400 text-base md:text-lg mb-8 max-w-lg mx-auto">
+            <p className="apple-subhead text-base md:text-lg mb-10 max-w-lg mx-auto">
               Share your vision — our experts will find the perfect surface.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
-              <Link to="/contact" data-testid="home-contact-btn"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-stone-900 text-white text-sm font-medium hover:bg-stone-800 transition-colors shadow-lg shadow-stone-200">
+              <Link to="/contact" data-testid="home-contact-btn" className="btn-gold">
                 Request a Quote <ArrowRight size={14} />
               </Link>
               <a href="https://wa.me/919377521509" target="_blank" rel="noreferrer" data-testid="home-whatsapp-btn"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-stone-200 text-stone-700 text-sm font-medium hover:bg-stone-50 transition-colors">
+                className="btn-secondary">
                 WhatsApp Us
               </a>
             </div>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -13,6 +13,7 @@
   --sw-dark: #000000;
   --sw-gold: #bf9b5e;
   --sw-gold-light: #d4b483;
+  --sw-warm: 30 8% 95%;
 }
 
 @layer base {
@@ -44,19 +45,19 @@
     --card-foreground: 0 0% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 11%;
-    --primary: 0 0% 11%;
+    --primary: 30 10% 22%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 5% 96%;
+    --secondary: 30 6% 96%;
     --secondary-foreground: 0 0% 11%;
-    --muted: 240 5% 96%;
+    --muted: 30 6% 96%;
     --muted-foreground: 0 0% 53%;
-    --accent: 240 5% 96%;
+    --accent: 30 6% 96%;
     --accent-foreground: 0 0% 11%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 82%;
     --input: 0 0% 82%;
-    --ring: 0 0% 11%;
+    --ring: 30 10% 22%;
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
@@ -76,7 +77,7 @@
     --card-foreground: 0 0% 97%;
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 97%;
-    --primary: 0 0% 97%;
+    --primary: 30 10% 80%;
     --primary-foreground: 0 0% 11%;
     --secondary: 240 4% 16%;
     --secondary-foreground: 0 0% 97%;
@@ -110,11 +111,11 @@
     @apply inline-flex items-center justify-center gap-2
            font-medium px-7 py-3 rounded-full text-sm
            transition-all duration-300 active:scale-[0.97];
-    background: var(--sw-black);
-    color: white;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
   }
   .btn-primary:hover {
-    background: #000;
+    background: hsl(30 10% 16%);
   }
 
   .btn-secondary {
@@ -125,30 +126,31 @@
     color: var(--sw-black);
   }
   .btn-secondary:hover {
-    background: var(--sw-black);
-    color: white;
-    border-color: var(--sw-black);
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
   }
 
-  .btn-blue {
+  .btn-gold {
     @apply inline-flex items-center justify-center gap-2 text-sm
-           font-medium px-7 py-3 rounded-full
+           font-medium px-7 py-3.5 rounded-full
            transition-all duration-300 active:scale-[0.97];
-    background: #44403c;
-    color: white;
+    background: linear-gradient(135deg, #bf9b5e 0%, #d4b483 100%);
+    color: #1d1d1f;
+    box-shadow: 0 4px 20px rgba(191,155,94,0.3);
   }
-  .btn-blue:hover {
-    background: #292524;
+  .btn-gold:hover {
+    box-shadow: 0 6px 30px rgba(191,155,94,0.45);
+    transform: translateY(-1px);
   }
 
-  .link-blue {
-    color: #92400e;
+  .link-gold {
+    color: var(--sw-gold);
     font-size: 0.875rem;
-    @apply inline-flex items-center gap-1 transition-colors;
+    @apply inline-flex items-center gap-1 transition-colors font-medium;
   }
-  .link-blue:hover {
-    color: #78350f;
-    text-decoration: underline;
+  .link-gold:hover {
+    color: var(--sw-gold-light);
   }
 
   .nav-glass {
@@ -253,13 +255,18 @@
   to   { transform: translateX(-33.33%); }
 }
 
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
 .admin-sidebar {
   @apply fixed left-0 top-0 h-full bg-white border-r border-gray-100 z-40;
   width: 280px;
 }
 
 ::selection {
-  background: var(--sw-black);
+  background: var(--sw-gold);
   color: var(--sw-white);
 }
 
@@ -270,6 +277,13 @@
 /* Apple-style large text fade gradient */
 .text-gradient-gray {
   background: linear-gradient(to bottom, var(--sw-black), var(--sw-gray));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--sw-gold), var(--sw-gold-light));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -297,9 +311,22 @@
 .blog-content ul, .blog-content ol { @apply mb-5 pl-6; color: var(--sw-gray); }
 .blog-content li { @apply mb-2 text-base leading-relaxed; }
 .blog-content strong { color: var(--sw-black); }
-.blog-content a { color: #0066cc; }
+.blog-content a { color: var(--sw-gold); }
 .blog-content a:hover { text-decoration: underline; }
 .blog-content table { @apply w-full mb-6 text-sm; border-collapse: collapse; }
 .blog-content th { @apply text-left py-2 px-3 font-semibold border-b; border-color: var(--sw-border); color: var(--sw-black); }
 .blog-content td { @apply py-2 px-3 border-b; border-color: var(--sw-border); color: var(--sw-gray); }
-.blog-content blockquote { @apply border-l-4 pl-5 my-6 italic; border-color: var(--sw-border); color: var(--sw-gray); }
+.blog-content blockquote { @apply border-l-4 pl-5 my-6 italic; border-color: var(--sw-gold); color: var(--sw-gray); }
+
+/* Parallax-like fixed background */
+.parallax-bg {
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .parallax-bg {
+    background-attachment: scroll;
+  }
+}
