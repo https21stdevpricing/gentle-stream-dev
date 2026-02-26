@@ -10,7 +10,7 @@ export default function Navbar() {
   const location = useLocation();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -18,77 +18,72 @@ export default function Navbar() {
   useEffect(() => setMenuOpen(false), [location.pathname]);
 
   const isHome = location.pathname === '/';
+  const isDark = isHome && !scrolled;
+
   const links = [
     { to: '/', label: 'Home' },
     { to: '/products', label: 'Products' },
     { to: '/about', label: 'About' },
+    { to: '/blog', label: 'Blog' },
     { to: '/contact', label: 'Contact' },
   ];
-
-  const textColor = scrolled || !isHome ? 'text-sw-black' : 'text-white';
 
   return (
     <nav
       data-testid="navbar"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled || !isHome ? 'nav-glass shadow-[0_1px_0_rgba(0,0,0,0.08)]' : 'bg-transparent'
+        isDark ? 'nav-glass-dark' : 'nav-glass shadow-[0_0.5px_0_rgba(0,0,0,0.08)]'
       }`}
+      style={{ height: 44 }}
     >
-      <div className="max-w-[1400px] mx-auto flex items-center justify-between h-14 px-6 md:px-10">
-        <Link to="/" data-testid="nav-logo" className="flex items-center gap-2.5 group">
-          <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${textColor}`}>
-            SW
-          </span>
-          <span className={`font-semibold text-[15px] tracking-tight transition-colors duration-300 ${textColor}`}>
+      <div className="max-w-[980px] mx-auto flex items-center justify-between h-full px-5">
+        <Link to="/" data-testid="nav-logo" className="flex items-center gap-1.5">
+          <span className={`font-semibold text-sm tracking-tight transition-colors duration-300 ${isDark ? 'text-white' : 'text-sw-black'}`}>
             Stone World
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-7">
           {links.map(l => (
             <Link
               key={l.to}
               to={l.to}
               data-testid={`nav-${l.label.toLowerCase()}`}
-              className={`text-xs font-medium tracking-wide transition-opacity duration-200 hover:opacity-60 ${
+              className={`text-[12px] font-normal transition-opacity duration-200 hover:opacity-70 ${
                 location.pathname === l.to ? 'opacity-100' : 'opacity-80'
-              } ${textColor}`}
+              } ${isDark ? 'text-white' : 'text-sw-black'}`}
             >
               {l.label}
             </Link>
           ))}
-        </div>
-
-        <div className="hidden md:flex items-center gap-4">
           {isAdmin && (
-            <Link to="/admin" data-testid="nav-admin" className={`text-xs font-medium ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
+            <Link to="/admin/dashboard" className={`text-[12px] font-normal opacity-70 hover:opacity-100 transition-opacity ${isDark ? 'text-white' : 'text-sw-black'}`}>
               Dashboard
             </Link>
           )}
-          <Link
-            to="/contact"
-            data-testid="nav-quote-btn"
-            className={`text-xs font-medium px-5 py-2 rounded-full transition-all duration-300 ${
-              scrolled || !isHome
-                ? 'bg-sw-black text-white hover:bg-black'
-                : 'bg-white/15 text-white backdrop-blur-sm border border-white/20 hover:bg-white/25'
-            }`}
-          >
-            Get Quote
-          </Link>
         </div>
+
+        <Link
+          to="/contact"
+          data-testid="nav-quote-btn"
+          className={`hidden md:inline-flex items-center text-[12px] font-normal transition-opacity duration-200 hover:opacity-70 ${
+            isDark ? 'text-white' : 'text-sw-black'
+          }`}
+        >
+          Get Quote
+        </Link>
 
         <button
           data-testid="nav-mobile-menu"
           onClick={() => setMenuOpen(!menuOpen)}
-          className={`md:hidden p-1.5 transition-colors ${textColor}`}
+          className={`md:hidden p-1 transition-colors ${isDark ? 'text-white' : 'text-sw-black'}`}
         >
-          {menuOpen ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
+          {menuOpen ? <X size={18} strokeWidth={1.5} /> : <Menu size={18} strokeWidth={1.5} />}
         </button>
       </div>
 
       {menuOpen && (
-        <div className="md:hidden nav-glass border-t border-black/5 px-6 py-6 flex flex-col gap-5">
+        <div className="md:hidden bg-white border-t border-black/5 px-6 py-6 flex flex-col gap-5 shadow-lg">
           {links.map(l => (
             <Link
               key={l.to}
@@ -100,8 +95,8 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          {isAdmin && <Link to="/admin" className="text-sm font-medium text-sw-black">Dashboard</Link>}
-          <Link to="/contact" className="btn-primary self-start text-xs px-6 py-2.5">
+          {isAdmin && <Link to="/admin/dashboard" className="text-sm font-medium text-sw-black">Dashboard</Link>}
+          <Link to="/contact" className="btn-blue self-start text-xs px-6 py-2.5">
             Get Quote <ArrowRight size={13} />
           </Link>
         </div>

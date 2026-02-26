@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, X, SlidersHorizontal } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ProductCard, ProductDetailPanel } from '@/components/ProductCard';
@@ -11,9 +11,9 @@ import type { Product, Category } from '@/utils/mockData';
 function SkeletonCard() {
   return (
     <div className="animate-pulse">
-      <div className="rounded-xl bg-sw-offwhite mb-3" style={{ aspectRatio: '4/5' }} />
+      <div className="rounded-2xl bg-sw-offwhite mb-3" style={{ aspectRatio: '3/4' }} />
       <div className="h-2 bg-sw-offwhite rounded-full w-1/4 mb-2" />
-      <div className="h-3.5 bg-sw-offwhite rounded-full w-3/4 mb-1.5" />
+      <div className="h-3.5 bg-sw-offwhite rounded-full w-3/4 mb-1" />
       <div className="h-2.5 bg-sw-offwhite rounded-full w-1/2" />
     </div>
   );
@@ -30,7 +30,7 @@ export default function Products() {
 
   useEffect(() => {
     getCategories().then(r => setCategories(r.data)).catch(() => {});
-    document.title = 'Products — Stone World';
+    document.title = 'Products — Stone World | Premium Surface Materials';
   }, []);
 
   const loadProducts = useCallback(() => {
@@ -58,134 +58,78 @@ export default function Products() {
     <div className="bg-white min-h-screen" data-testid="products-page">
       <Navbar />
 
-      {/* Hero Header */}
-      <div className="bg-sw-black pt-28 pb-16 px-6 md:px-10 relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden>
-          <span
-            className="font-bold text-white/[0.025] uppercase tracking-tighter leading-none"
-            style={{ fontSize: 'clamp(7rem, 18vw, 22rem)' }}
-          >
-            STONE
-          </span>
-        </div>
-
-        <div className="relative z-10 max-w-[1400px] mx-auto">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-            <div>
-              <p className="text-white/40 text-xs tracking-[0.25em] uppercase mb-4 font-medium">
-                The Collection
-              </p>
-              <h1
-                className="font-bold text-white leading-none tracking-tight"
-                style={{ fontSize: 'clamp(2.8rem, 7vw, 6rem)' }}
-              >
-                Products
-              </h1>
-              <p className="text-white/40 text-sm mt-4 max-w-sm leading-relaxed">
-                Explore our curated collection of premium surface materials — marble, granite, tiles, and beyond.
-              </p>
-            </div>
-
-            <div className="relative lg:w-80">
-              <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" strokeWidth={1.5} />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search stones, tiles, marble..."
-                data-testid="product-search"
-                className="w-full pl-10 pr-10 py-3 border border-white/15 rounded-full text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-all bg-white/[0.08]"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
-                >
-                  <X size={13} />
-                </button>
-              )}
-            </div>
+      {/* Header */}
+      <div className="pt-[44px]">
+        <div className="apple-section pb-8">
+          <div className="container-sw">
+            <h1 className="apple-headline mb-2" style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)' }}>
+              Our Products.
+            </h1>
+            <p className="apple-subhead text-lg max-w-lg mx-auto">
+              Explore our curated collection of premium surface materials.
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* Category Filters */}
-      <div className="bg-white border-b border-sw-border/20 sticky top-14 z-30 shadow-sm" data-testid="category-filters">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10">
-          <div className="flex items-center gap-2 py-4 overflow-x-auto scrollbar-hide">
-            <button
-              onClick={() => setCategory('')}
-              data-testid="filter-all"
-              className={`shrink-0 px-5 py-2 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 ${
-                !selectedCategory
-                  ? 'bg-sw-black text-white shadow-sm'
-                  : 'text-sw-gray hover:text-sw-black hover:bg-sw-offwhite'
-              }`}
-            >
-              All Materials
-            </button>
-            {categories.map(c => (
-              <button
-                key={c.id}
-                onClick={() => setCategory(selectedCategory === c.name ? '' : c.name)}
-                data-testid={`filter-${c.slug}`}
-                className={`shrink-0 px-5 py-2 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 ${
-                  selectedCategory === c.name
-                    ? 'bg-sw-black text-white shadow-sm'
-                    : 'text-sw-gray hover:text-sw-black hover:bg-sw-offwhite'
-                }`}
-              >
-                {c.name}
-              </button>
-            ))}
-            <div className="ml-auto shrink-0 pl-4 border-l border-sw-border/30 flex items-center gap-1.5">
-              <SlidersHorizontal size={12} className="text-sw-gray" />
-              <span className="text-xs text-sw-gray font-medium whitespace-nowrap">
-                {loading ? '—' : `${products.length} item${products.length !== 1 ? 's' : ''}`}
+        {/* Search & Filters */}
+        <div className="sticky top-[44px] z-30 bg-white/80 backdrop-blur-xl border-b border-sw-border/20">
+          <div className="container-wide mx-auto px-6 py-3">
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1 max-w-xs">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-sw-gray" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search..."
+                  data-testid="product-search"
+                  className="w-full pl-9 pr-8 py-2 bg-sw-offwhite rounded-lg text-sm text-sw-black placeholder:text-sw-gray/60 focus:outline-none focus:ring-1 focus:ring-sw-border transition-all"
+                />
+                {search && (
+                  <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-sw-gray hover:text-sw-black">
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide" data-testid="category-filters">
+                <button
+                  onClick={() => setCategory('')}
+                  data-testid="filter-all"
+                  className={`shrink-0 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all ${
+                    !selectedCategory ? 'bg-sw-black text-white' : 'text-sw-gray hover:text-sw-black'
+                  }`}
+                >
+                  All
+                </button>
+                {categories.filter(c => c.active).slice(0, 6).map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => setCategory(selectedCategory === c.name ? '' : c.name)}
+                    data-testid={`filter-${c.slug}`}
+                    className={`shrink-0 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all ${
+                      selectedCategory === c.name ? 'bg-sw-black text-white' : 'text-sw-gray hover:text-sw-black'
+                    }`}
+                  >
+                    {c.name}
+                  </button>
+                ))}
+              </div>
+
+              <span className="text-[11px] text-sw-gray shrink-0 ml-auto hidden md:block">
+                {loading ? '—' : `${products.length} items`}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Products Grid */}
-      <section className="py-14 md:py-20 px-6 md:px-10">
-        <div className="max-w-[1400px] mx-auto">
-          <AnimatePresence>
-            {(selectedCategory || search) && !loading && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                className="flex items-center gap-2 mb-8"
-              >
-                <span className="text-xs text-sw-gray">Filtering by</span>
-                {selectedCategory && (
-                  <button
-                    onClick={() => setCategory('')}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-sw-black bg-sw-offwhite px-3 py-1.5 rounded-full hover:bg-sw-border/30 transition-colors"
-                  >
-                    {selectedCategory} <X size={10} />
-                  </button>
-                )}
-                {search && (
-                  <button
-                    onClick={() => setSearch('')}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-sw-black bg-sw-offwhite px-3 py-1.5 rounded-full hover:bg-sw-border/30 transition-colors"
-                  >
-                    "{search}" <X size={10} />
-                  </button>
-                )}
-                <button onClick={() => { setSearch(''); setCategory(''); }} className="text-xs text-sw-gray hover:text-sw-black transition-colors ml-1">
-                  Clear all
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
+      {/* Grid */}
+      <section className="py-10 md:py-16 px-6">
+        <div className="container-wide mx-auto">
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {[...Array(10)].map((_, i) => <SkeletonCard key={i} />)}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
             </div>
           ) : products.length === 0 ? (
             <motion.div
@@ -194,38 +138,23 @@ export default function Products() {
               className="text-center py-28"
               data-testid="no-products"
             >
-              <div className="w-16 h-16 rounded-2xl bg-sw-offwhite flex items-center justify-center mx-auto mb-5">
-                <Search size={24} className="text-sw-gray/40" />
-              </div>
-              <p className="font-bold text-sw-black text-2xl tracking-tight mb-2">Nothing found</p>
-              <p className="text-sw-gray text-sm mb-8 max-w-sm mx-auto leading-relaxed">
-                No products match your current filters. Try browsing a different category or clear your search.
-              </p>
-              <button
-                onClick={() => { setSearch(''); setCategory(''); }}
-                className="btn-primary text-sm"
-              >
-                Browse All Products
+              <p className="font-semibold text-2xl tracking-tight mb-2">No products found.</p>
+              <p className="text-sw-gray text-sm mb-6">Try a different category or clear your search.</p>
+              <button onClick={() => { setSearch(''); setCategory(''); }} className="btn-blue text-sm">
+                Browse All
               </button>
             </motion.div>
           ) : (
-            <motion.div
-              layout
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
-            >
+            <motion.div layout className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               <AnimatePresence mode="popLayout">
                 {products.map((p, i) => (
                   <motion.div
                     key={p.id}
                     layout
-                    initial={{ opacity: 0, scale: 0.95, y: 16 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{
-                      delay: Math.min(i * 0.035, 0.25),
-                      duration: 0.45,
-                      ease: [0.16, 1, 0.3, 1]
-                    }}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ delay: Math.min(i * 0.04, 0.2), duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <ProductCard product={p} onClick={setSelectedProduct} />
                   </motion.div>
@@ -239,12 +168,7 @@ export default function Products() {
       <Footer />
 
       <AnimatePresence>
-        {selectedProduct && (
-          <ProductDetailPanel
-            product={selectedProduct}
-            onClose={() => setSelectedProduct(null)}
-          />
-        )}
+        {selectedProduct && <ProductDetailPanel product={selectedProduct} onClose={() => setSelectedProduct(null)} />}
       </AnimatePresence>
     </div>
   );

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, ArrowUpRight } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
 import type { SiteInfo } from '@/utils/mockData';
 
 interface FooterProps {
@@ -12,78 +12,72 @@ export default function Footer({ siteInfo = {} }: FooterProps) {
     phone1 = '+91 9377521509',
     email = 'Stoneworld1947@gmail.com',
     address = 'Near Dantali Gam, Dantali, Gujarat 382165',
-    tagline = 'Quality Matters the MOST!',
   } = siteInfo;
 
+  const productLinks = ['Marble', 'Granite', 'Vitrified Tiles', 'Natural Stone', 'Quartz', 'Sanitaryware', 'Cement & Sand', 'TMT Bars'];
+  const navLinks = [
+    ['/', 'Home'], ['/products', 'Products'], ['/about', 'About'],
+    ['/blog', 'Blog'], ['/contact', 'Contact'],
+  ];
+
   return (
-    <footer className="bg-sw-black text-white" data-testid="footer">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-        <div className="lg:col-span-1">
-          <div className="flex items-center gap-2.5 mb-5">
-            <span className="font-bold text-lg text-white">SW</span>
-            <span className="font-semibold text-[15px] tracking-tight text-white">{company_name}</span>
+    <footer className="bg-sw-offwhite" data-testid="footer">
+      <div className="max-w-[980px] mx-auto px-6 py-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-[12px]">
+          <div>
+            <h4 className="font-semibold text-sw-black mb-3">Shop</h4>
+            <ul className="space-y-2">
+              {productLinks.map(cat => (
+                <li key={cat}>
+                  <Link to={`/products?category=${encodeURIComponent(cat)}`} className="text-sw-gray hover:text-sw-black transition-colors">{cat}</Link>
+                </li>
+              ))}
+            </ul>
           </div>
-          <p className="font-display italic text-white/40 text-sm leading-relaxed mb-6">
-            "{tagline}"
-          </p>
-          <p className="text-white/30 text-xs leading-relaxed">
-            AB Stone World Pvt Ltd.<br />
-            Est. 2003, Ahmedabad, Gujarat
-          </p>
-        </div>
-
-        <div>
-          <h4 className="text-xs font-medium tracking-[0.15em] uppercase text-white/50 mb-6">Navigate</h4>
-          <ul className="space-y-3.5">
-            {[['/', 'Home'], ['/products', 'Products'], ['/about', 'About Us'], ['/contact', 'Contact']].map(([to, label]) => (
-              <li key={to}>
-                <Link to={to} className="text-sm text-white/60 hover:text-white transition-colors duration-200 flex items-center gap-1.5 group">
-                  {label}
-                  <ArrowUpRight size={11} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                </Link>
+          <div>
+            <h4 className="font-semibold text-sw-black mb-3">Company</h4>
+            <ul className="space-y-2">
+              {navLinks.map(([to, label]) => (
+                <li key={to}>
+                  <Link to={to} className="text-sw-gray hover:text-sw-black transition-colors">{label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-sw-black mb-3">Contact</h4>
+            <ul className="space-y-2.5">
+              <li className="flex items-start gap-2">
+                <Phone size={12} className="text-sw-gray mt-0.5 shrink-0" />
+                <a href={`tel:${phone1}`} className="text-sw-gray hover:text-sw-black transition-colors">{phone1}</a>
               </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="text-xs font-medium tracking-[0.15em] uppercase text-white/50 mb-6">Products</h4>
-          <ul className="space-y-3.5">
-            {['Marble', 'Granite', 'Vitrified Tiles', 'Natural Stone', 'Quartz', 'Sanitaryware'].map(cat => (
-              <li key={cat}>
-                <Link to={`/products?category=${cat}`} className="text-sm text-white/60 hover:text-white transition-colors duration-200">
-                  {cat}
-                </Link>
+              <li className="flex items-start gap-2">
+                <Mail size={12} className="text-sw-gray mt-0.5 shrink-0" />
+                <a href={`mailto:${email}`} className="text-sw-gray hover:text-sw-black transition-colors break-all">{email}</a>
               </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="text-xs font-medium tracking-[0.15em] uppercase text-white/50 mb-6">Connect</h4>
-          <ul className="space-y-4">
-            <li className="flex items-start gap-3">
-              <Phone size={14} className="text-white/40 mt-0.5 shrink-0" strokeWidth={1.5} />
-              <a href={`tel:${phone1}`} className="text-sm text-white/60 hover:text-white transition-colors">{phone1}</a>
-            </li>
-            <li className="flex items-start gap-3">
-              <Mail size={14} className="text-white/40 mt-0.5 shrink-0" strokeWidth={1.5} />
-              <a href={`mailto:${email}`} className="text-sm text-white/60 hover:text-white transition-colors break-all">{email}</a>
-            </li>
-            <li className="flex items-start gap-3">
-              <MapPin size={14} className="text-white/40 mt-0.5 shrink-0" strokeWidth={1.5} />
-              <span className="text-sm text-white/60">{address}</span>
-            </li>
-          </ul>
+              <li className="flex items-start gap-2">
+                <MapPin size={12} className="text-sw-gray mt-0.5 shrink-0" />
+                <span className="text-sw-gray">{address}</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-sw-black mb-3">Resources</h4>
+            <ul className="space-y-2">
+              <li><Link to="/blog" className="text-sw-gray hover:text-sw-black transition-colors">Blog & Guides</Link></li>
+              <li><a href="https://wa.me/919377521509" target="_blank" rel="noreferrer" className="text-sw-gray hover:text-sw-black transition-colors">WhatsApp</a></li>
+              <li><Link to="/contact" className="text-sw-gray hover:text-sw-black transition-colors">Request a Quote</Link></li>
+            </ul>
+          </div>
         </div>
       </div>
 
-      <div className="border-t border-white/[0.08]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-white/25 text-xs">
-            &copy; {new Date().getFullYear()} AB Stone World Pvt Ltd. All rights reserved.
+      <div className="border-t border-sw-border/40">
+        <div className="max-w-[980px] mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
+          <p className="text-sw-gray text-[11px]">
+            &copy; {new Date().getFullYear()} AB {company_name} Pvt Ltd. All rights reserved.
           </p>
-          <Link to="/admin/login" className="text-white/10 hover:text-white/30 text-xs transition-colors" data-testid="footer-admin-link">
+          <Link to="/admin/login" className="text-sw-gray/30 hover:text-sw-gray/60 text-[11px] transition-colors" data-testid="footer-admin-link">
             Admin
           </Link>
         </div>
