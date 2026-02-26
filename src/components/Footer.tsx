@@ -74,9 +74,12 @@ export default function Footer({ siteInfo = {} }: FooterProps) {
 
       <div className="border-t border-sw-border/40">
         <div className="max-w-[980px] mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
-          <p className="text-sw-gray text-[11px]">
-            &copy; {new Date().getFullYear()} AB {company_name} Pvt Ltd. All rights reserved.
-          </p>
+          <div className="flex items-center gap-2">
+            <img src="/images/sw-logo.png" alt="Stone World" className="h-5 w-auto opacity-60" />
+            <p className="text-sw-gray text-[11px]">
+              &copy; {new Date().getFullYear()} AB {company_name} Pvt Ltd. All rights reserved.
+            </p>
+          </div>
           <Link to="/admin/login" className="text-sw-gray/30 hover:text-sw-gray/60 text-[11px] transition-colors" data-testid="footer-admin-link">
             Admin
           </Link>
