@@ -5,6 +5,8 @@ import {
   IndianRupee, Building2, Phone, Mail, MapPin, Hash, Calendar, Percent,
   Package, FileDown, CheckCircle2, AlertCircle, Sparkles
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -496,6 +498,36 @@ export default function AdminInvoices() {
     toast.success('Tally XML exported');
   };
 
+  const downloadPDF = async () => {
+    const el = document.getElementById('invoice-print');
+    if (!el) return;
+    toast.info('Generating PDF...');
+    try {
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+      const ratio = Math.min(pdfW / imgW, pdfH / imgH);
+      const w = imgW * ratio;
+      const h = imgH * ratio;
+      const x = (pdfW - w) / 2;
+      pdf.addImage(imgData, 'PNG', x, 0, w, h);
+      pdf.save(`${editing?.invoice_number || 'invoice'}.pdf`);
+      toast.success('PDF downloaded!');
+    } catch {
+      toast.error('PDF generation failed');
+    }
+  };
+
   const printInvoice = () => {
     setPreviewMode(true);
     setTimeout(() => window.print(), 400);
@@ -521,6 +553,7 @@ export default function AdminInvoices() {
       <div className="max-w-3xl mx-auto">
         <div className="flex flex-wrap gap-2 mb-4 print:hidden">
           <button onClick={() => setPreviewMode(false)} className="flex items-center gap-1.5 px-4 py-2 bg-muted rounded-xl text-sm hover:bg-accent transition-colors"><X size={14} /> Edit</button>
+          <button onClick={downloadPDF} className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm hover:bg-emerald-700 transition-all"><Download size={14} /> Download PDF</button>
           <button onClick={printInvoice} className="flex items-center gap-1.5 px-4 py-2 bg-foreground text-background rounded-xl text-sm hover:opacity-90 transition-all"><Printer size={14} /> Print</button>
           <button onClick={() => setShowTemplateBar(!showTemplateBar)} className="flex items-center gap-1.5 px-4 py-2 bg-muted rounded-xl text-sm hover:bg-accent transition-colors"><Palette size={14} /> Template</button>
         </div>
@@ -546,11 +579,14 @@ export default function AdminInvoices() {
         <div
           className={`bg-white rounded-2xl shadow-xl border-2 ${borderColor} overflow-hidden print:shadow-none print:border-none print:rounded-none relative`}
           id="invoice-print"
-          style={{
-            ...(customBg ? { backgroundImage: `url(${customBg})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' } : {}),
-            minHeight: '1100px',
-          }}
         >
+          {/* Custom background at full visibility */}
+          {customBg && (
+            <div className="absolute inset-0 z-0">
+              <img src={customBg} alt="" className="w-full h-full object-contain" />
+            </div>
+          )}
+
           {/* Watermark for branded (if no custom bg) */}
           {useBrandedLayout && !customBg && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.04]">
@@ -558,9 +594,7 @@ export default function AdminInvoices() {
             </div>
           )}
 
-          {customBg && <div className="absolute inset-0 bg-white/85 z-0" />}
-
-          <div className="relative z-10 flex flex-col" style={{ minHeight: '1100px' }}>
+          <div className="relative z-10 flex flex-col" style={{ minHeight: '1122px', aspectRatio: '794/1122' }}>
             {/* ─── HEADER ─── */}
             {useBrandedLayout ? (
               <div className="p-6 sm:p-8">
@@ -617,7 +651,7 @@ export default function AdminInvoices() {
             <div className="flex-1 px-6 sm:px-8">
               {/* Customer Info */}
               <div className="py-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50/80 rounded-xl">
+                <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl ${customBg ? '' : 'bg-slate-50/80'}`}>
                   <div>
                     <p className="text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-wider">Bill To</p>
                     <p className="font-bold text-sm text-slate-800">{editing?.customer_name}</p>
@@ -648,7 +682,7 @@ export default function AdminInvoices() {
               <div className="pb-4 overflow-x-auto">
                 <table className="w-full text-sm min-w-[500px]">
                   <thead>
-                    <tr className={`${useBrandedLayout ? 'bg-[#00bcd4]/10 text-[#00838f]' : t === 'modern' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                    <tr className={`${useBrandedLayout ? (customBg ? 'text-[#00838f]' : 'bg-[#00bcd4]/10 text-[#00838f]') : t === 'modern' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}`}>
                       <th className="text-left py-2.5 px-3 font-semibold rounded-l-lg text-[11px]">#</th>
                       <th className="text-left py-2.5 px-3 font-semibold text-[11px]">Description</th>
                       <th className="text-left py-2.5 px-3 font-semibold text-[11px]">HSN</th>
