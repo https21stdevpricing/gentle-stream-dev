@@ -38,9 +38,7 @@ export default function Navbar() {
     >
       <div className="max-w-[980px] mx-auto flex items-center justify-between h-full px-5">
         <Link to="/" data-testid="nav-logo" className="flex items-center gap-1.5">
-          <span className={`font-semibold text-sm tracking-tight transition-colors duration-300 ${isDark ? 'text-white' : 'text-sw-black'}`}>
-            Stone World
-          </span>
+          <img src="/images/sw-logo.png" alt="Stone World" className="h-6 w-auto" />
         </Link>
 
         <div className="hidden md:flex items-center gap-7">
