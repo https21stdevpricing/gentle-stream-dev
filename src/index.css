@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,8 +11,8 @@
   --sw-gray: #86868b;
   --sw-border: #d2d2d7;
   --sw-dark: #000000;
-  --sw-teal: #3BB4C1;
-  --sw-teal-dark: #048998;
+  --sw-gold: #bf9b5e;
+  --sw-gold-light: #d4b483;
 }
 
 @layer base {
@@ -20,19 +20,21 @@
 
   body {
     margin: 0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', sans-serif;
     background-color: var(--sw-white);
     color: var(--sw-black);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    text-rendering: optimizeLegibility;
   }
 
   h1, h2, h3, h4, h5 {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.03em;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
     color: var(--sw-black);
+    line-height: 1.08;
   }
 
   :root {
@@ -101,23 +103,52 @@
 
 @layer components {
   .section-padding { @apply py-24 md:py-32 px-6 md:px-12 lg:px-24; }
-  .container-sw { @apply max-w-7xl mx-auto; }
+  .container-sw { @apply max-w-[980px] mx-auto; }
+  .container-wide { @apply max-w-[1200px] mx-auto; }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-sw-black text-white
-           font-medium px-8 py-3.5 rounded-full text-sm
-           transition-all duration-300 hover:bg-black active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2
+           font-medium px-7 py-3 rounded-full text-sm
+           transition-all duration-300 active:scale-[0.97];
+    background: var(--sw-black);
+    color: white;
+  }
+  .btn-primary:hover {
+    background: #000;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 border border-sw-border text-sw-black
-           font-medium px-8 py-3.5 rounded-full text-sm
-           transition-all duration-300 hover:bg-sw-black hover:text-white active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 border text-sm
+           font-medium px-7 py-3 rounded-full
+           transition-all duration-300 active:scale-[0.97];
+    border-color: var(--sw-border);
+    color: var(--sw-black);
+  }
+  .btn-secondary:hover {
+    background: var(--sw-black);
+    color: white;
+    border-color: var(--sw-black);
   }
 
-  .btn-ghost {
-    @apply inline-flex items-center gap-1.5 text-sm font-medium text-sw-black
-           transition-colors duration-200 hover:text-sw-gray;
+  .btn-blue {
+    @apply inline-flex items-center justify-center gap-2 text-sm
+           font-medium px-7 py-3 rounded-full
+           transition-all duration-300 active:scale-[0.97];
+    background: #0071e3;
+    color: white;
+  }
+  .btn-blue:hover {
+    background: #0077ed;
+  }
+
+  .link-blue {
+    color: #0066cc;
+    font-size: 0.875rem;
+    @apply inline-flex items-center gap-1 transition-colors;
+  }
+  .link-blue:hover {
+    color: #004499;
+    text-decoration: underline;
   }
 
   .nav-glass {
@@ -126,18 +157,35 @@
     background: rgba(255, 255, 255, 0.72);
   }
 
-  .card-clean {
-    @apply bg-white rounded-2xl overflow-hidden transition-all duration-500;
+  .nav-glass-dark {
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: rgba(29, 29, 31, 0.8);
   }
-  .card-clean:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+
+  .apple-section {
+    @apply text-center py-16 md:py-24 px-6;
+  }
+
+  .apple-headline {
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.06;
+    color: var(--sw-black);
+  }
+
+  .apple-subhead {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    color: var(--sw-gray);
   }
 }
 
 @layer utilities {
   .text-sw-black { color: var(--sw-black); }
   .text-sw-gray { color: var(--sw-gray); }
+  .text-sw-gold { color: var(--sw-gold); }
   .bg-sw-black { background-color: var(--sw-black); }
   .bg-sw-offwhite { background-color: var(--sw-offwhite); }
   .bg-sw-dark { background-color: var(--sw-dark); }
@@ -156,12 +204,27 @@
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-/* Hero Ken Burns */
-@keyframes kenBurns {
+/* Cinematic Ken Burns */
+@keyframes kenBurnsZoomIn {
   from { transform: scale(1.0); }
-  to   { transform: scale(1.08); }
+  to   { transform: scale(1.15); }
 }
-.ken-burns { animation: kenBurns 12s ease-out forwards; }
+@keyframes kenBurnsZoomOut {
+  from { transform: scale(1.15); }
+  to   { transform: scale(1.0); }
+}
+@keyframes kenBurnsPanLeft {
+  from { transform: scale(1.1) translateX(2%); }
+  to   { transform: scale(1.1) translateX(-2%); }
+}
+@keyframes kenBurnsPanRight {
+  from { transform: scale(1.1) translateX(-2%); }
+  to   { transform: scale(1.1) translateX(2%); }
+}
+.ken-burns-zoom-in { animation: kenBurnsZoomIn 10s ease-out forwards; }
+.ken-burns-zoom-out { animation: kenBurnsZoomOut 10s ease-out forwards; }
+.ken-burns-pan-left { animation: kenBurnsPanLeft 10s ease-out forwards; }
+.ken-burns-pan-right { animation: kenBurnsPanRight 10s ease-out forwards; }
 
 /* Fade animations */
 @keyframes fadeInUp {
@@ -192,7 +255,7 @@
 
 .admin-sidebar {
   @apply fixed left-0 top-0 h-full bg-white border-r border-gray-100 z-40;
-  width: 260px;
+  width: 280px;
 }
 
 ::selection {
@@ -204,6 +267,39 @@
   font-family: 'Playfair Display', serif;
 }
 
-.font-manrope {
-  font-family: 'Manrope', sans-serif;
+/* Apple-style large text fade gradient */
+.text-gradient-gray {
+  background: linear-gradient(to bottom, var(--sw-black), var(--sw-gray));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
+
+/* Cinematic letterbox bars */
+.letterbox::before,
+.letterbox::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8%;
+  background: black;
+  z-index: 2;
+}
+.letterbox::before { top: 0; }
+.letterbox::after { bottom: 0; }
+
+/* Blog content styles */
+.blog-content h2 { @apply text-2xl font-semibold mt-10 mb-4; }
+.blog-content h3 { @apply text-xl font-semibold mt-8 mb-3; }
+.blog-content h4 { @apply text-lg font-semibold mt-6 mb-2; }
+.blog-content p { @apply text-base leading-relaxed mb-5; color: var(--sw-gray); }
+.blog-content ul, .blog-content ol { @apply mb-5 pl-6; color: var(--sw-gray); }
+.blog-content li { @apply mb-2 text-base leading-relaxed; }
+.blog-content strong { color: var(--sw-black); }
+.blog-content a { color: #0066cc; }
+.blog-content a:hover { text-decoration: underline; }
+.blog-content table { @apply w-full mb-6 text-sm; border-collapse: collapse; }
+.blog-content th { @apply text-left py-2 px-3 font-semibold border-b; border-color: var(--sw-border); color: var(--sw-black); }
+.blog-content td { @apply py-2 px-3 border-b; border-color: var(--sw-border); color: var(--sw-gray); }
+.blog-content blockquote { @apply border-l-4 pl-5 my-6 italic; border-color: var(--sw-border); color: var(--sw-gray); }
