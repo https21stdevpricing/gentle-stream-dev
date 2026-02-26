@@ -14,7 +14,146 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      blog_posts: {
+        Row: {
+          author: string
+          category: string
+          content: string
+          cover_image: string | null
+          created_at: string
+          excerpt: string
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          published: boolean
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string
+          category?: string
+          content: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt: string
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          published?: boolean
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          category?: string
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          published?: boolean
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inquiries: {
+        Row: {
+          area: string | null
+          created_at: string
+          custom_specs: Json | null
+          email: string
+          id: string
+          material: string | null
+          message: string
+          name: string
+          phone: string | null
+          product_category: string | null
+          product_interest: string | null
+          project_type: string | null
+          purpose: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          area?: string | null
+          created_at?: string
+          custom_specs?: Json | null
+          email: string
+          id?: string
+          material?: string | null
+          message?: string
+          name: string
+          phone?: string | null
+          product_category?: string | null
+          product_interest?: string | null
+          project_type?: string | null
+          purpose?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string | null
+          created_at?: string
+          custom_specs?: Json | null
+          email?: string
+          id?: string
+          material?: string | null
+          message?: string
+          name?: string
+          phone?: string | null
+          product_category?: string | null
+          product_interest?: string | null
+          project_type?: string | null
+          purpose?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inquiry_replies: {
+        Row: {
+          id: string
+          inquiry_id: string
+          reply_text: string
+          reply_type: string
+          sent_at: string
+          sent_by: string | null
+        }
+        Insert: {
+          id?: string
+          inquiry_id: string
+          reply_text: string
+          reply_type?: string
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Update: {
+          id?: string
+          inquiry_id?: string
+          reply_text?: string
+          reply_type?: string
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiry_replies_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
