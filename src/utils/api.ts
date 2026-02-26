@@ -1,13 +1,57 @@
 import { MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_SITE_INFO, type Product, type Category, type SiteInfo } from './mockData';
 import { supabase } from '@/integrations/supabase/client';
 
-// Simulate API delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Fetch products from DB first, fallback to mock
 export const getProducts = async (params: { featured?: boolean; category?: string; search?: string; limit?: number } = {}): Promise<{ data: Product[] }> => {
+  try {
+    let query = supabase.from('products').select('*').eq('active', true);
+    if (params.featured) query = query.eq('featured', true);
+    if (params.category) query = query.ilike('category', params.category);
+    if (params.limit) query = query.limit(params.limit);
+    query = query.order('created_at', { ascending: false });
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    let products: Product[] = (data || []).map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      slug: p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      category: p.category,
+      material: p.material || '',
+      dimensions: p.length_mm && p.width_mm ? `${p.length_mm}x${p.width_mm} mm` : '',
+      finish: p.finish || '',
+      description: p.description || '',
+      image_url: p.thumbnail || (p.images && p.images[0]) || '',
+      gallery_images: p.images || [],
+      tags: p.tags || [],
+      featured: p.featured ?? false,
+      active: p.active ?? true,
+      price_range: p.price ? `₹${p.price}/${p.unit || 'sqft'}` : '',
+      applications: [],
+    }));
+
+    if (params.search) {
+      const s = params.search.toLowerCase();
+      products = products.filter(p =>
+        p.name.toLowerCase().includes(s) ||
+        p.category.toLowerCase().includes(s) ||
+        p.material.toLowerCase().includes(s) ||
+        p.tags.some(t => t.toLowerCase().includes(s))
+      );
+    }
+
+    // If DB has products, return them; otherwise fall back to mock
+    if (products.length > 0) return { data: products };
+  } catch {
+    // Fall through to mock
+  }
+
+  // Fallback to mock data
   await delay(200);
   let products = [...MOCK_PRODUCTS].filter(p => p.active);
-
   if (params.featured) products = products.filter(p => p.featured);
   if (params.category) products = products.filter(p => p.category.toLowerCase() === params.category!.toLowerCase());
   if (params.search) {
@@ -20,7 +64,6 @@ export const getProducts = async (params: { featured?: boolean; category?: strin
     );
   }
   if (params.limit) products = products.slice(0, params.limit);
-
   return { data: products };
 };
 
@@ -29,8 +72,22 @@ export const getCategories = async (): Promise<{ data: Category[] }> => {
   return { data: MOCK_CATEGORIES };
 };
 
+// Fetch site info from DB settings, fallback to mock
 export const getSiteInfo = async (): Promise<{ data: SiteInfo }> => {
-  await delay(50);
+  try {
+    const { data, error } = await supabase.from('site_settings').select('*');
+    if (error) throw error;
+    if (data && data.length > 0) {
+      const map: Record<string, string> = {};
+      data.forEach((s: any) => { map[s.key] = s.value; });
+      return {
+        data: {
+          ...MOCK_SITE_INFO,
+          ...Object.fromEntries(Object.entries(map).filter(([_, v]) => v)),
+        } as SiteInfo,
+      };
+    }
+  } catch {}
   return { data: MOCK_SITE_INFO };
 };
 
