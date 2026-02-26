@@ -154,6 +154,285 @@ export type Database = {
           },
         ]
       }
+      invoice_items: {
+        Row: {
+          amount: number
+          description: string
+          discount_percent: number | null
+          hsn_code: string | null
+          id: string
+          invoice_id: string
+          product_id: string | null
+          quantity: number
+          rate: number
+          sort_order: number | null
+          tax_amount: number | null
+          tax_rate: number | null
+          total: number
+          unit: string | null
+        }
+        Insert: {
+          amount?: number
+          description: string
+          discount_percent?: number | null
+          hsn_code?: string | null
+          id?: string
+          invoice_id: string
+          product_id?: string | null
+          quantity?: number
+          rate?: number
+          sort_order?: number | null
+          tax_amount?: number | null
+          tax_rate?: number | null
+          total?: number
+          unit?: string | null
+        }
+        Update: {
+          amount?: number
+          description?: string
+          discount_percent?: number | null
+          hsn_code?: string | null
+          id?: string
+          invoice_id?: string
+          product_id?: string | null
+          quantity?: number
+          rate?: number
+          sort_order?: number | null
+          tax_amount?: number | null
+          tax_rate?: number | null
+          total?: number
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          amount_in_words: string | null
+          billing_address: string | null
+          cgst_amount: number | null
+          cgst_rate: number | null
+          company_gstin: string | null
+          created_at: string | null
+          customer_address: string | null
+          customer_email: string | null
+          customer_gstin: string | null
+          customer_name: string
+          customer_phone: string | null
+          discount_amount: number | null
+          discount_percent: number | null
+          due_date: string | null
+          grand_total: number | null
+          id: string
+          igst_amount: number | null
+          igst_rate: number | null
+          invoice_number: string
+          invoice_type: string
+          metadata: Json | null
+          notes: string | null
+          payment_terms: string | null
+          sgst_amount: number | null
+          sgst_rate: number | null
+          shipping_address: string | null
+          status: string | null
+          subtotal: number | null
+          tally_exported: boolean | null
+          tally_voucher_number: string | null
+          taxable_amount: number | null
+          terms: string | null
+          total_tax: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount_in_words?: string | null
+          billing_address?: string | null
+          cgst_amount?: number | null
+          cgst_rate?: number | null
+          company_gstin?: string | null
+          created_at?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_gstin?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          due_date?: string | null
+          grand_total?: number | null
+          id?: string
+          igst_amount?: number | null
+          igst_rate?: number | null
+          invoice_number: string
+          invoice_type?: string
+          metadata?: Json | null
+          notes?: string | null
+          payment_terms?: string | null
+          sgst_amount?: number | null
+          sgst_rate?: number | null
+          shipping_address?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tally_exported?: boolean | null
+          tally_voucher_number?: string | null
+          taxable_amount?: number | null
+          terms?: string | null
+          total_tax?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount_in_words?: string | null
+          billing_address?: string | null
+          cgst_amount?: number | null
+          cgst_rate?: number | null
+          company_gstin?: string | null
+          created_at?: string | null
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_gstin?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          discount_amount?: number | null
+          discount_percent?: number | null
+          due_date?: string | null
+          grand_total?: number | null
+          id?: string
+          igst_amount?: number | null
+          igst_rate?: number | null
+          invoice_number?: string
+          invoice_type?: string
+          metadata?: Json | null
+          notes?: string | null
+          payment_terms?: string | null
+          sgst_amount?: number | null
+          sgst_rate?: number | null
+          shipping_address?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tally_exported?: boolean | null
+          tally_voucher_number?: string | null
+          taxable_amount?: number | null
+          terms?: string | null
+          total_tax?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          active: boolean | null
+          category: string
+          color: string | null
+          cost_price: number | null
+          created_at: string | null
+          description: string | null
+          featured: boolean | null
+          finish: string | null
+          hsn_code: string | null
+          id: string
+          images: string[] | null
+          length_mm: number | null
+          margin_percent: number | null
+          material: string | null
+          min_stock_level: number | null
+          name: string
+          origin: string | null
+          price: number
+          specs: Json | null
+          stock_quantity: number | null
+          subcategory: string | null
+          supplier: string | null
+          supplier_code: string | null
+          tags: string[] | null
+          thickness_mm: number | null
+          thumbnail: string | null
+          unit: string | null
+          updated_at: string | null
+          variants: Json | null
+          weight_kg: number | null
+          width_mm: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          category?: string
+          color?: string | null
+          cost_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          finish?: string | null
+          hsn_code?: string | null
+          id?: string
+          images?: string[] | null
+          length_mm?: number | null
+          margin_percent?: number | null
+          material?: string | null
+          min_stock_level?: number | null
+          name: string
+          origin?: string | null
+          price?: number
+          specs?: Json | null
+          stock_quantity?: number | null
+          subcategory?: string | null
+          supplier?: string | null
+          supplier_code?: string | null
+          tags?: string[] | null
+          thickness_mm?: number | null
+          thumbnail?: string | null
+          unit?: string | null
+          updated_at?: string | null
+          variants?: Json | null
+          weight_kg?: number | null
+          width_mm?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          category?: string
+          color?: string | null
+          cost_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          featured?: boolean | null
+          finish?: string | null
+          hsn_code?: string | null
+          id?: string
+          images?: string[] | null
+          length_mm?: number | null
+          margin_percent?: number | null
+          material?: string | null
+          min_stock_level?: number | null
+          name?: string
+          origin?: string | null
+          price?: number
+          specs?: Json | null
+          stock_quantity?: number | null
+          subcategory?: string | null
+          supplier?: string | null
+          supplier_code?: string | null
+          tags?: string[] | null
+          thickness_mm?: number | null
+          thumbnail?: string | null
+          unit?: string | null
+          updated_at?: string | null
+          variants?: Json | null
+          weight_kg?: number | null
+          width_mm?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
