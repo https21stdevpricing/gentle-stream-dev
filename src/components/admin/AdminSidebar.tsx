@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import {
   LayoutDashboard, Mail, Package, FileText, X, ChevronRight, LogOut,
-  PenSquare, Settings
+  PenSquare, Settings, Users, Warehouse
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type AdminView = 'overview' | 'inquiries' | 'products' | 'invoices' | 'blog' | 'settings';
+export type AdminView = 'overview' | 'inquiries' | 'products' | 'invoices' | 'blog' | 'settings' | 'employees' | 'inventory';
 
 interface AdminSidebarProps {
   view: AdminView;
@@ -21,6 +21,8 @@ const NAV_ITEMS: { id: AdminView; label: string; icon: typeof LayoutDashboard }[
   { id: 'inquiries', label: 'Inquiries', icon: Mail },
   { id: 'products', label: 'Products', icon: Package },
   { id: 'invoices', label: 'Invoices', icon: FileText },
+  { id: 'employees', label: 'Team', icon: Users },
+  { id: 'inventory', label: 'Inventory', icon: Warehouse },
   { id: 'blog', label: 'Blog', icon: PenSquare },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];

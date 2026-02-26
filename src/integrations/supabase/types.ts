@@ -65,6 +65,154 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_attendance: {
+        Row: {
+          check_in: string | null
+          check_out: string | null
+          created_at: string
+          date: string
+          employee_id: string
+          hours_worked: number | null
+          id: string
+          notes: string | null
+          overtime_hours: number | null
+          status: string
+        }
+        Insert: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string
+          date?: string
+          employee_id: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          overtime_hours?: number | null
+          status?: string
+        }
+        Update: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string
+          date?: string
+          employee_id?: string
+          hours_worked?: number | null
+          id?: string
+          notes?: string | null
+          overtime_hours?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_attendance_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          employee_id: string
+          id: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          employee_id: string
+          id?: string
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          employee_id?: string
+          id?: string
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_tasks_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          address: string | null
+          created_at: string
+          daily_wage: number
+          department: string
+          emergency_contact: string | null
+          id: string
+          joined_at: string
+          left_at: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          photo_url: string | null
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          daily_wage?: number
+          department?: string
+          emergency_contact?: string | null
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          daily_wage?: number
+          department?: string
+          emergency_contact?: string | null
+          id?: string
+          joined_at?: string
+          left_at?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inquiries: {
         Row: {
           area: string | null
@@ -150,6 +298,69 @@ export type Database = {
             columns: ["inquiry_id"]
             isOneToOne: false
             referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_stock: {
+        Row: {
+          category: string | null
+          cost_price: number | null
+          created_at: string
+          id: string
+          last_restocked_at: string | null
+          min_stock_level: number | null
+          notes: string | null
+          product_id: string | null
+          product_name: string
+          quantity: number
+          unit: string | null
+          updated_at: string
+          zone_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          cost_price?: number | null
+          created_at?: string
+          id?: string
+          last_restocked_at?: string | null
+          min_stock_level?: number | null
+          notes?: string | null
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          unit?: string | null
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          cost_price?: number | null
+          created_at?: string
+          id?: string
+          last_restocked_at?: string | null
+          min_stock_level?: number | null
+          notes?: string | null
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          unit?: string | null
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_stock_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_stock_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "warehouse_zones"
             referencedColumns: ["id"]
           },
         ]
@@ -451,6 +662,84 @@ export type Database = {
           key?: string
           updated_at?: string | null
           value?: string
+        }
+        Relationships: []
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          category: string | null
+          contact_person: string | null
+          created_at: string
+          email: string | null
+          gstin: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          rating: number | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          category?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          gstin?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          rating?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          category?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          gstin?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          rating?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      warehouse_zones: {
+        Row: {
+          capacity_sqft: number | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          used_sqft: number | null
+          zone_type: string | null
+        }
+        Insert: {
+          capacity_sqft?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          used_sqft?: number | null
+          zone_type?: string | null
+        }
+        Update: {
+          capacity_sqft?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          used_sqft?: number | null
+          zone_type?: string | null
         }
         Relationships: []
       }
