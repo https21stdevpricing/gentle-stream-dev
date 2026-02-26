@@ -26,7 +26,7 @@ export default function Navbar() {
     { to: '/products', label: 'Products' },
     { to: '/about', label: 'About' },
     { to: '/blog', label: 'Blog' },
-    { to: '/contact', label: 'Contact' },
+    { to: '/support', label: 'Support' },
   ];
 
   return (
@@ -38,9 +38,9 @@ export default function Navbar() {
       style={{ height: 48 }}
     >
       <div className="max-w-[980px] mx-auto flex items-center justify-between h-full px-5">
-        <Link to="/" data-testid="nav-logo" className="flex items-center gap-2">
-          <img src="/images/sw-logo.png" alt="Stone World" className="h-6 w-auto" />
-          <span className={`text-[13px] font-semibold tracking-tight hidden sm:inline transition-colors duration-300 ${isDark ? 'text-white' : 'text-foreground'}`}>
+        <Link to="/" data-testid="nav-logo" className="flex items-center gap-2.5">
+          <img src="/images/sw-logo.png" alt="Stone World" className="h-8 w-auto" />
+          <span className={`text-[14px] font-semibold tracking-tight transition-colors duration-300 ${isDark ? 'text-white' : 'text-foreground'}`}>
             Stone World
           </span>
         </Link>
@@ -66,12 +66,12 @@ export default function Navbar() {
         </div>
 
         <Link
-          to="/contact"
+          to="/support"
           data-testid="nav-quote-btn"
           className={`hidden md:inline-flex items-center gap-1.5 text-[12px] font-medium transition-all duration-200 px-4 py-1.5 rounded-full ${
             isDark 
               ? 'bg-white/10 text-white hover:bg-white/20' 
-              : 'bg-primary/10 text-foreground hover:bg-primary/20'
+              : 'bg-foreground text-background hover:opacity-90'
           }`}
         >
           Get Quote
@@ -94,7 +94,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="md:hidden bg-background border-t border-border/30 overflow-hidden"
+            className="md:hidden bg-background border-t border-border/20 overflow-hidden"
           >
             <div className="px-6 py-6 flex flex-col gap-4">
               {links.map(l => (
@@ -109,7 +109,7 @@ export default function Navbar() {
                 </Link>
               ))}
               {isAdmin && <Link to="/admin/dashboard" className="text-sm font-medium text-foreground">Dashboard</Link>}
-              <Link to="/contact" className="btn-gold self-start text-xs px-6 py-2.5 mt-2">
+              <Link to="/support" className="btn-primary self-start text-xs px-6 py-2.5 mt-2">
                 Get Quote <ArrowRight size={13} />
               </Link>
             </div>

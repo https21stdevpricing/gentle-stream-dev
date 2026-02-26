@@ -3,13 +3,6 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const KEN_BURNS_CLASSES = [
-  'ken-burns-zoom-in',
-  'ken-burns-zoom-out',
-  'ken-burns-pan-left',
-  'ken-burns-pan-right',
-];
-
 const SLIDES = [
   {
     key: 'marble',
@@ -49,6 +42,8 @@ const SLIDES = [
   },
 ];
 
+const KEN_BURNS_CLASSES = ['ken-burns-zoom-in', 'ken-burns-zoom-out', 'ken-burns-pan-left', 'ken-burns-pan-right'];
+
 export default function HeroCarousel() {
   const [active, setActive] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
@@ -86,10 +81,8 @@ export default function HeroCarousel() {
           transition={{ duration: 1.8, ease: [0.25, 0.1, 0.25, 1] }}
           className="absolute inset-0 z-0"
         >
-          <div
-            className={`w-full h-full bg-cover bg-center ${kenBurns}`}
-            style={{ backgroundImage: `url(${slide.image})` }}
-          />
+          <div className={`w-full h-full bg-cover bg-center ${kenBurns}`}
+            style={{ backgroundImage: `url(${slide.image})` }} />
         </motion.div>
       </AnimatePresence>
 
@@ -97,7 +90,7 @@ export default function HeroCarousel() {
       <div className="absolute inset-0 bg-black/50 z-[1]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 z-[1]" />
 
-      {/* Content — centered, Apple-style */}
+      {/* Content */}
       <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center px-6">
         <AnimatePresence mode="wait">
           <motion.div
@@ -108,51 +101,34 @@ export default function HeroCarousel() {
             transition={{ duration: 0.5 }}
             className="text-center max-w-3xl"
           >
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="text-white/40 text-[11px] tracking-[0.35em] uppercase font-medium mb-6"
-            >
+              className="text-white/40 text-[11px] tracking-[0.35em] uppercase font-medium mb-6">
               {slide.label}
             </motion.p>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="text-white font-semibold leading-[1.02] mb-5 whitespace-pre-line"
-              style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', letterSpacing: '-0.04em' }}
-            >
+              style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', letterSpacing: '-0.04em' }}>
               {slide.tagline}
             </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
+            <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-white/50 text-base md:text-lg max-w-lg mx-auto mb-10 leading-relaxed font-light"
-            >
+              className="text-white/50 text-base md:text-lg max-w-lg mx-auto mb-10 leading-relaxed font-light">
               {slide.description}
             </motion.p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.5 }}
-              className="flex flex-wrap gap-4 justify-center"
-            >
-              <Link
-                to={slide.link}
-                data-testid="hero-explore-btn"
-                className="inline-flex items-center gap-2 text-sm font-medium px-7 py-3.5 rounded-full bg-white text-black transition-all duration-300 hover:bg-white/90 hover:shadow-lg active:scale-[0.97]"
-              >
+              className="flex flex-wrap gap-4 justify-center">
+              <Link to={slide.link} data-testid="hero-explore-btn"
+                className="inline-flex items-center gap-2 text-sm font-medium px-7 py-3.5 rounded-full bg-white text-black transition-all duration-300 hover:bg-white/90 hover:shadow-lg active:scale-[0.97]">
                 {slide.cta} <ArrowRight size={14} />
               </Link>
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 text-white/60 text-sm font-medium hover:text-white transition-colors duration-300"
-              >
+              <Link to="/support"
+                className="inline-flex items-center gap-2 text-white/60 text-sm font-medium hover:text-white transition-colors duration-300">
                 Get a free quote →
               </Link>
             </motion.div>
@@ -160,26 +136,18 @@ export default function HeroCarousel() {
         </AnimatePresence>
       </div>
 
-      {/* Bottom nav — minimal pill style */}
+      {/* Bottom tabs */}
       <div className="absolute bottom-[10%] left-0 right-0 z-[4]" data-testid="material-tabs">
         <div className="flex justify-center gap-1.5 md:gap-2">
           {SLIDES.map((s, i) => (
-            <button
-              key={s.key}
-              onClick={() => goTo(i)}
-              data-testid={`material-tab-${s.key}`}
-              className="relative px-4 py-2 text-[11px] font-medium tracking-wide transition-all duration-400"
-            >
+            <button key={s.key} onClick={() => goTo(i)} data-testid={`material-tab-${s.key}`}
+              className="relative px-4 py-2 text-[11px] font-medium tracking-wide transition-all duration-400">
               {i === active && (
-                <motion.div
-                  layoutId="heroTab"
+                <motion.div layoutId="heroTab"
                   className="absolute inset-0 bg-white/15 backdrop-blur-md rounded-full"
-                  transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-                />
+                  transition={{ type: 'spring', stiffness: 350, damping: 35 }} />
               )}
-              <span className={`relative z-10 transition-colors duration-300 ${
-                i === active ? 'text-white' : 'text-white/30 hover:text-white/60'
-              }`}>
+              <span className={`relative z-10 transition-colors duration-300 ${i === active ? 'text-white' : 'text-white/30 hover:text-white/60'}`}>
                 {s.label}
               </span>
             </button>
@@ -188,17 +156,10 @@ export default function HeroCarousel() {
       </div>
 
       {/* Scroll indicator */}
-      <motion.button
-        onClick={scrollDown}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-[3%] left-1/2 -translate-x-1/2 z-[4] text-white/25 hover:text-white/50 transition-colors"
-      >
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-        >
+      <motion.button onClick={scrollDown}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 1 }}
+        className="absolute bottom-[3%] left-1/2 -translate-x-1/2 z-[4] text-white/25 hover:text-white/50 transition-colors">
+        <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}>
           <ChevronDown size={20} strokeWidth={1.5} />
         </motion.div>
       </motion.button>
