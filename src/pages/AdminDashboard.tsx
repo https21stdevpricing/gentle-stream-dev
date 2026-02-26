@@ -12,6 +12,8 @@ import AdminProducts from '@/components/admin/AdminProducts';
 import AdminInvoices from '@/components/admin/AdminInvoices';
 import AdminBlog from '@/components/admin/AdminBlog';
 import AdminSettings from '@/components/admin/AdminSettings';
+import AdminEmployees from '@/components/admin/AdminEmployees';
+import AdminInventory from '@/components/admin/AdminInventory';
 
 interface Inquiry {
   id: string;
@@ -70,6 +72,8 @@ export default function AdminDashboard() {
     inquiries: 'Inquiries',
     products: 'Products',
     invoices: 'Invoices',
+    employees: 'Team',
+    inventory: 'Inventory',
     blog: 'Blog',
     settings: 'Settings',
   };
@@ -115,6 +119,8 @@ export default function AdminDashboard() {
           )}
           {view === 'products' && <AdminProducts />}
           {view === 'invoices' && <AdminInvoices />}
+          {view === 'employees' && <AdminEmployees />}
+          {view === 'inventory' && <AdminInventory />}
           {view === 'blog' && <AdminBlog />}
           {view === 'settings' && <AdminSettings />}
         </div>
