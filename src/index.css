@@ -134,20 +134,20 @@
     @apply inline-flex items-center justify-center gap-2 text-sm
            font-medium px-7 py-3 rounded-full
            transition-all duration-300 active:scale-[0.97];
-    background: #0071e3;
+    background: #44403c;
     color: white;
   }
   .btn-blue:hover {
-    background: #0077ed;
+    background: #292524;
   }
 
   .link-blue {
-    color: #0066cc;
+    color: #92400e;
     font-size: 0.875rem;
     @apply inline-flex items-center gap-1 transition-colors;
   }
   .link-blue:hover {
-    color: #004499;
+    color: #78350f;
     text-decoration: underline;
   }
 
