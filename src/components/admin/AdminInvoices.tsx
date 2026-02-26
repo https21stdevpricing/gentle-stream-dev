@@ -622,20 +622,22 @@ export default function AdminInvoices() {
           )}
 
           {useBrandedLayout ? (
-            /* ═══ BRANDED TEMPLATE — 3 fixed image layers, NO overlap ═══ */
-            <div className="relative w-full flex flex-col" style={{ minHeight: '1122px' }}>
-              {/* Layer: Watermark (centered, behind everything) */}
-              <div className="absolute inset-0 flex items-center justify-center z-[1] pointer-events-none">
-                <img src="/images/invoice-watermark.png" alt="" className="w-[55%] h-auto opacity-100" />
+            /* ═══ BRANDED TEMPLATE — strict vertical stacking, NO overlap ═══ */
+            <div className="relative w-full" style={{ minHeight: '1122px' }}>
+              {/* Watermark — absolutely centered, behind content */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
+                <img src="/images/invoice-watermark.png" alt="" className="w-[50%] h-auto opacity-[0.08]" />
               </div>
 
-              {/* Layer 1: Header image (fixed at top, non-overlapping) */}
-              <div className="relative z-[2] shrink-0 w-full">
-                <img src="/images/invoice-header.png" alt="" className="w-full h-auto block" style={{ display: 'block' }} />
-              </div>
+              {/* Vertical flex container — header → content → footer, no overlap */}
+              <div className="relative flex flex-col" style={{ minHeight: '1122px', zIndex: 1 }}>
+                {/* Header image — fixed height, no flex shrink */}
+                <div style={{ flexShrink: 0 }}>
+                  <img src="/images/invoice-header.png" alt="" className="w-full h-auto" style={{ display: 'block', marginBottom: 0 }} />
+                </div>
 
-              {/* Layer 2: Content zone — starts AFTER header, ends BEFORE footer */}
-              <div className="relative z-[2] flex-1 px-8 pt-2 pb-2 overflow-hidden" style={{ minHeight: 0 }}>
+                {/* Content zone — fills middle space */}
+                <div className="px-8 py-3" style={{ flex: '1 1 auto', overflow: 'hidden' }}>
                 {/* Bill To + Document Type */}
                 <div className="flex justify-between items-start mb-3">
                   <div>
@@ -667,7 +669,7 @@ export default function AdminInvoices() {
                   </div>
                 </div>
 
-                {/* Items Table — compact */}
+                {/* Items Table */}
                 <table className="w-full text-[10px] mb-3">
                   <thead>
                     <tr className="border-b-2 border-[#00bcd4]/30 text-[#00838f]">
@@ -708,18 +710,19 @@ export default function AdminInvoices() {
                 </div>
                 {editing?.amount_in_words && <p className="text-[9px] italic text-slate-400 mb-2">Amount in words: {editing.amount_in_words}</p>}
 
-                {/* Terms — compact */}
+                {/* Terms */}
                 {(editing?.terms || editing?.payment_terms) && (
                   <div className="pt-2 border-t border-slate-100 space-y-1">
                     {editing?.payment_terms && <p className="text-[9px] text-slate-500"><span className="font-bold uppercase text-slate-400">Payment: </span>{editing.payment_terms}</p>}
                     {editing?.terms && <div><p className="text-[8px] font-black uppercase text-slate-400 mb-0.5">Terms & Conditions</p><p className="text-[9px] text-slate-500 whitespace-pre-wrap leading-snug">{editing.terms}</p></div>}
                   </div>
                 )}
-              </div>
+                </div>
 
-              {/* Layer 3: Footer image (fixed at bottom, non-overlapping) */}
-              <div className="relative z-[2] shrink-0 mt-auto w-full">
-                <img src="/images/invoice-bottom.png" alt="" className="w-full h-auto block" style={{ display: 'block' }} />
+                {/* Footer image — fixed at bottom */}
+                <div style={{ flexShrink: 0, marginTop: 'auto' }}>
+                  <img src="/images/invoice-bottom.png" alt="" className="w-full h-auto" style={{ display: 'block', marginTop: 0 }} />
+                </div>
               </div>
             </div>
           ) : (

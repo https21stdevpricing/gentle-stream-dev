@@ -60,8 +60,8 @@ export default function Products() {
       <Navbar />
 
       <div className="pt-[48px]">
-        {/* Hero — clean white Apple style */}
-        <section className="text-center py-20 md:py-28 px-6 bg-background">
+        {/* Hero */}
+        <section className="text-center py-16 md:py-24 px-6 bg-background">
           <div className="container-sw">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
               <h1 className="apple-headline mb-3" style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)' }}>
@@ -75,14 +75,14 @@ export default function Products() {
         </section>
 
         {/* Filters Bar */}
-        <div className="sticky top-[48px] z-30 bg-background/80 backdrop-blur-xl border-y border-border/20">
+        <div className="sticky top-[48px] z-30 bg-background/80 backdrop-blur-xl border-b border-border/10">
           <div className="container-wide mx-auto px-6 py-3">
             <div className="flex items-center gap-3">
               <div className="relative flex-1 max-w-xs">
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input type="text" value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Search products..." data-testid="product-search"
-                  className="w-full pl-10 pr-9 py-2 bg-[#f5f5f7] border-none rounded-lg text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/10 transition-all" />
+                  className="w-full pl-10 pr-9 py-2 bg-[#f5f5f7] border-none rounded-full text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/10 transition-all" />
                 {search && (
                   <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     <X size={12} />
@@ -92,7 +92,7 @@ export default function Products() {
 
               <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide flex-1" data-testid="category-filters">
                 <button onClick={() => setCategory('')} data-testid="filter-all"
-                  className={`shrink-0 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all ${
+                  className={`shrink-0 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-300 ${
                     !selectedCategory ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-[#f5f5f7]'
                   }`}>
                   All
@@ -100,7 +100,7 @@ export default function Products() {
                 {categories.filter(c => c.active).slice(0, 8).map(c => (
                   <button key={c.id} onClick={() => setCategory(selectedCategory === c.name ? '' : c.name)}
                     data-testid={`filter-${c.slug}`}
-                    className={`shrink-0 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all ${
+                    className={`shrink-0 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-300 ${
                       selectedCategory === c.name ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-[#f5f5f7]'
                     }`}>
                     {c.name}
