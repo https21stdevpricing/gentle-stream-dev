@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Plus, Search, Edit3, Trash2, Save, X, Loader2, Users, Clock, Calendar,
-  Phone, MapPin, DollarSign, CheckCircle2, XCircle, AlertCircle, User,
+  Phone, MapPin, IndianRupee, CheckCircle2, XCircle, AlertCircle, User,
   ClipboardList, ChevronRight, Star, Timer, TrendingUp
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -330,7 +330,7 @@ export default function AdminEmployees() {
               <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
                 {emp.phone && <span className="flex items-center gap-1"><Phone size={11} /> {emp.phone}</span>}
                 {emp.address && <span className="flex items-center gap-1"><MapPin size={11} /> {emp.address}</span>}
-                <span className="flex items-center gap-1"><DollarSign size={11} /> ₹{emp.daily_wage}/day</span>
+                <span className="flex items-center gap-1"><IndianRupee size={11} /> ₹{emp.daily_wage}/day</span>
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
