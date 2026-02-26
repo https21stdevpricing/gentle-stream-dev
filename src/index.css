@@ -5,14 +5,14 @@
 @tailwind utilities;
 
 :root {
-  --sw-black: #1d1d1f;
+  --sw-black: #1a1a1a;
   --sw-white: #ffffff;
-  --sw-offwhite: #f5f5f7;
-  --sw-gray: #86868b;
-  --sw-border: #d2d2d7;
-  --sw-dark: #000000;
-  --sw-gold: #bf9b5e;
-  --sw-gold-light: #d4b483;
+  --sw-offwhite: #fafaf9;
+  --sw-gray: #78716c;
+  --sw-border: #e7e5e4;
+  --sw-dark: #0c0a09;
+  --sw-gold: #b8860b;
+  --sw-gold-light: #d4a843;
   --sw-warm: 30 8% 95%;
 }
 
@@ -21,7 +21,7 @@
 
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
     background-color: var(--sw-white);
     color: var(--sw-black);
     -webkit-font-smoothing: antialiased;
@@ -31,7 +31,7 @@
   }
 
   h1, h2, h3, h4, h5 {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
     font-weight: 600;
     letter-spacing: -0.025em;
     color: var(--sw-black);
@@ -40,24 +40,24 @@
 
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 11%;
+    --foreground: 20 14% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 11%;
+    --card-foreground: 20 14% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 11%;
-    --primary: 30 10% 22%;
+    --popover-foreground: 20 14% 10%;
+    --primary: 20 6% 20%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 6% 96%;
-    --secondary-foreground: 0 0% 11%;
-    --muted: 30 6% 96%;
-    --muted-foreground: 0 0% 53%;
-    --accent: 30 6% 96%;
-    --accent-foreground: 0 0% 11%;
+    --secondary: 30 10% 96%;
+    --secondary-foreground: 20 14% 10%;
+    --muted: 30 10% 96%;
+    --muted-foreground: 20 6% 46%;
+    --accent: 30 10% 96%;
+    --accent-foreground: 20 14% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 82%;
-    --input: 0 0% 82%;
-    --ring: 30 10% 22%;
+    --border: 20 6% 90%;
+    --input: 20 6% 90%;
+    --ring: 20 6% 20%;
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
@@ -107,40 +107,43 @@
   .container-sw { @apply max-w-[980px] mx-auto; }
   .container-wide { @apply max-w-[1200px] mx-auto; }
 
+  /* Apple-style primary button — dark, clean */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2
            font-medium px-7 py-3 rounded-full text-sm
            transition-all duration-300 active:scale-[0.97];
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
   }
   .btn-primary:hover {
-    background: hsl(30 10% 16%);
+    opacity: 0.85;
   }
 
+  /* Secondary — outlined, minimal */
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 border text-sm
            font-medium px-7 py-3 rounded-full
            transition-all duration-300 active:scale-[0.97];
-    border-color: var(--sw-border);
-    color: var(--sw-black);
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground));
   }
   .btn-secondary:hover {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    border-color: hsl(var(--primary));
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
+    border-color: hsl(var(--foreground));
   }
 
+  /* Gold accent CTA */
   .btn-gold {
     @apply inline-flex items-center justify-center gap-2 text-sm
            font-medium px-7 py-3.5 rounded-full
            transition-all duration-300 active:scale-[0.97];
-    background: linear-gradient(135deg, #bf9b5e 0%, #d4b483 100%);
-    color: #1d1d1f;
-    box-shadow: 0 4px 20px rgba(191,155,94,0.3);
+    background: var(--sw-black);
+    color: var(--sw-white);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   }
   .btn-gold:hover {
-    box-shadow: 0 6px 30px rgba(191,155,94,0.45);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
     transform: translateY(-1px);
   }
 
@@ -162,7 +165,7 @@
   .nav-glass-dark {
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
-    background: rgba(29, 29, 31, 0.8);
+    background: rgba(10, 10, 10, 0.8);
   }
 
   .apple-section {
@@ -173,14 +176,30 @@
     font-weight: 600;
     letter-spacing: -0.03em;
     line-height: 1.06;
-    color: var(--sw-black);
+    color: hsl(var(--foreground));
   }
 
   .apple-subhead {
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.12;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
     color: var(--sw-gray);
+  }
+
+  /* Glass card */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  }
+
+  .glass-dark {
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
   }
 }
 
@@ -289,6 +308,19 @@ html {
   background-clip: text;
 }
 
+/* Mandala wireframe pattern */
+.mandala-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='80' fill='none' stroke='%23b8860b' stroke-width='0.3' opacity='0.08'/%3E%3Ccircle cx='100' cy='100' r='60' fill='none' stroke='%23b8860b' stroke-width='0.3' opacity='0.06'/%3E%3Ccircle cx='100' cy='100' r='40' fill='none' stroke='%23b8860b' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='100' cy='100' r='20' fill='none' stroke='%23b8860b' stroke-width='0.3' opacity='0.04'/%3E%3Cpath d='M100 20 L100 180 M20 100 L180 100 M35 35 L165 165 M165 35 L35 165' stroke='%23b8860b' stroke-width='0.2' opacity='0.05'/%3E%3Cellipse cx='100' cy='100' rx='70' ry='30' fill='none' stroke='%23b8860b' stroke-width='0.2' opacity='0.04' transform='rotate(0 100 100)'/%3E%3Cellipse cx='100' cy='100' rx='70' ry='30' fill='none' stroke='%23b8860b' stroke-width='0.2' opacity='0.04' transform='rotate(45 100 100)'/%3E%3Cellipse cx='100' cy='100' rx='70' ry='30' fill='none' stroke='%23b8860b' stroke-width='0.2' opacity='0.04' transform='rotate(90 100 100)'/%3E%3Cellipse cx='100' cy='100' rx='70' ry='30' fill='none' stroke='%23b8860b' stroke-width='0.2' opacity='0.04' transform='rotate(135 100 100)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+.mandala-pattern-dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='80' fill='none' stroke='%23d4a843' stroke-width='0.4' opacity='0.06'/%3E%3Ccircle cx='100' cy='100' r='60' fill='none' stroke='%23d4a843' stroke-width='0.3' opacity='0.05'/%3E%3Ccircle cx='100' cy='100' r='40' fill='none' stroke='%23d4a843' stroke-width='0.3' opacity='0.04'/%3E%3Ccircle cx='100' cy='100' r='20' fill='none' stroke='%23d4a843' stroke-width='0.3' opacity='0.03'/%3E%3Cpath d='M100 20 L100 180 M20 100 L180 100 M35 35 L165 165 M165 35 L35 165' stroke='%23d4a843' stroke-width='0.2' opacity='0.04'/%3E%3Cellipse cx='100' cy='100' rx='70' ry='30' fill='none' stroke='%23d4a843' stroke-width='0.2' opacity='0.03' transform='rotate(0 100 100)'/%3E%3Cellipse cx='100' cy='100' rx='70' ry='30' fill='none' stroke='%23d4a843' stroke-width='0.2' opacity='0.03' transform='rotate(45 100 100)'/%3E%3Cellipse cx='100' cy='100' rx='70' ry='30' fill='none' stroke='%23d4a843' stroke-width='0.2' opacity='0.03' transform='rotate(90 100 100)'/%3E%3Cellipse cx='100' cy='100' rx='70' ry='30' fill='none' stroke='%23d4a843' stroke-width='0.2' opacity='0.03' transform='rotate(135 100 100)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
 /* Cinematic letterbox bars */
 .letterbox::before,
 .letterbox::after {
@@ -329,4 +361,11 @@ html {
   .parallax-bg {
     background-attachment: scroll;
   }
+}
+
+/* Decorative gold line */
+.gold-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--sw-gold), transparent);
+  opacity: 0.3;
 }

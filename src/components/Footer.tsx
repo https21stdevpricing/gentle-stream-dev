@@ -21,9 +21,8 @@ export default function Footer({ siteInfo = {} }: FooterProps) {
   ];
 
   return (
-    <footer className="bg-sw-dark text-white/60" data-testid="footer">
-      {/* Top border accent */}
-      <div className="h-px bg-gradient-to-r from-transparent via-[var(--sw-gold)]/30 to-transparent" />
+    <footer className="bg-sw-dark text-white/60 mandala-pattern-dark" data-testid="footer">
+      <div className="gold-line" />
       
       <div className="max-w-[1080px] mx-auto px-6 pt-14 pb-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-[12px]">
@@ -71,15 +70,15 @@ export default function Footer({ siteInfo = {} }: FooterProps) {
             <h4 className="font-semibold text-white/80 mb-4 text-[11px] uppercase tracking-wider">Contact</h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
-                <Phone size={11} className="mt-0.5 shrink-0 text-white/30" />
+                <Phone size={11} className="mt-0.5 shrink-0 text-sw-gold/40" />
                 <a href={`tel:${phone1}`} className="hover:text-white transition-colors">{phone1}</a>
               </li>
               <li className="flex items-start gap-2">
-                <Mail size={11} className="mt-0.5 shrink-0 text-white/30" />
+                <Mail size={11} className="mt-0.5 shrink-0 text-sw-gold/40" />
                 <a href={`mailto:${email}`} className="hover:text-white transition-colors break-all">{email}</a>
               </li>
               <li className="flex items-start gap-2">
-                <MapPin size={11} className="mt-0.5 shrink-0 text-white/30" />
+                <MapPin size={11} className="mt-0.5 shrink-0 text-sw-gold/40" />
                 <span>{address}</span>
               </li>
             </ul>

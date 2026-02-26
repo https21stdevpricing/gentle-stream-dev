@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, X, SlidersHorizontal, Grid3X3, LayoutGrid } from 'lucide-react';
+import { Search, X, Grid3X3, LayoutGrid } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ProductCard, ProductDetailPanel } from '@/components/ProductCard';
@@ -11,10 +11,10 @@ import type { Product, Category } from '@/utils/mockData';
 function SkeletonCard() {
   return (
     <div className="animate-pulse">
-      <div className="rounded-2xl bg-stone-100 mb-3" style={{ aspectRatio: '3/4' }} />
-      <div className="h-2.5 bg-stone-100 rounded-full w-1/4 mb-2" />
-      <div className="h-3.5 bg-stone-100 rounded-full w-3/4 mb-1" />
-      <div className="h-2.5 bg-stone-100 rounded-full w-1/2" />
+      <div className="rounded-2xl bg-muted mb-3" style={{ aspectRatio: '3/4' }} />
+      <div className="h-2.5 bg-muted rounded-full w-1/4 mb-2" />
+      <div className="h-3.5 bg-muted rounded-full w-3/4 mb-1" />
+      <div className="h-2.5 bg-muted rounded-full w-1/2" />
     </div>
   );
 }
@@ -56,22 +56,22 @@ export default function Products() {
   };
 
   return (
-    <div className="bg-white min-h-screen" data-testid="products-page">
+    <div className="bg-background min-h-screen" data-testid="products-page">
       <Navbar />
 
-      {/* Hero */}
-      <div className="pt-[44px]">
-        <section className="relative overflow-hidden bg-stone-950 text-center py-20 md:py-28 px-6">
+      <div className="pt-[48px]">
+        {/* Hero */}
+        <section className="relative overflow-hidden bg-sw-dark text-center py-20 md:py-28 px-6 mandala-pattern-dark">
           <div className="absolute inset-0 opacity-15" style={{
-            backgroundImage: 'radial-gradient(circle at 30% 40%, rgba(191,155,94,0.4) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(191,155,94,0.2) 0%, transparent 50%)'
+            backgroundImage: 'radial-gradient(circle at 30% 40%, rgba(184,134,11,0.2) 0%, transparent 50%), radial-gradient(circle at 70% 60%, rgba(184,134,11,0.1) 0%, transparent 50%)'
           }} />
           <div className="container-sw relative z-10">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-              <p className="text-amber-400/80 text-[11px] uppercase tracking-[0.2em] font-semibold mb-4">Premium Collection</p>
+              <p className="text-sw-gold/60 text-[11px] uppercase tracking-[0.3em] font-semibold mb-4">Premium Collection</p>
               <h1 className="font-semibold text-white leading-tight mb-3" style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', letterSpacing: '-0.03em' }}>
                 Our Products.
               </h1>
-              <p className="text-stone-400 text-base md:text-lg max-w-md mx-auto leading-relaxed">
+              <p className="text-white/40 text-base md:text-lg max-w-md mx-auto leading-relaxed">
                 Explore our curated collection of premium surface materials — from Italian marble to Indian granite.
               </p>
             </motion.div>
@@ -79,16 +79,16 @@ export default function Products() {
         </section>
 
         {/* Filters Bar */}
-        <div className="sticky top-[44px] z-30 bg-white/90 backdrop-blur-xl border-b border-stone-100">
+        <div className="sticky top-[48px] z-30 bg-background/90 backdrop-blur-xl border-b border-border/30">
           <div className="container-wide mx-auto px-6 py-3">
             <div className="flex items-center gap-3">
               <div className="relative flex-1 max-w-xs">
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input type="text" value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Search products..." data-testid="product-search"
-                  className="w-full pl-10 pr-9 py-2.5 bg-stone-50 border border-stone-100 rounded-xl text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-200/50 focus:border-amber-300 transition-all" />
+                  className="w-full pl-10 pr-9 py-2.5 bg-muted/50 border border-border/30 rounded-xl text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-foreground/10 transition-all" />
                 {search && (
-                  <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700">
+                  <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     <X size={12} />
                   </button>
                 )}
@@ -96,16 +96,16 @@ export default function Products() {
 
               <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide flex-1" data-testid="category-filters">
                 <button onClick={() => setCategory('')} data-testid="filter-all"
-                  className={`shrink-0 px-4 py-2 rounded-xl text-[12px] font-medium transition-all ${
-                    !selectedCategory ? 'bg-stone-900 text-white shadow-md' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100'
+                  className={`shrink-0 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${
+                    !selectedCategory ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`}>
                   All
                 </button>
                 {categories.filter(c => c.active).slice(0, 8).map(c => (
                   <button key={c.id} onClick={() => setCategory(selectedCategory === c.name ? '' : c.name)}
                     data-testid={`filter-${c.slug}`}
-                    className={`shrink-0 px-4 py-2 rounded-xl text-[12px] font-medium transition-all ${
-                      selectedCategory === c.name ? 'bg-stone-900 text-white shadow-md' : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100'
+                    className={`shrink-0 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${
+                      selectedCategory === c.name ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     }`}>
                     {c.name}
                   </button>
@@ -113,13 +113,13 @@ export default function Products() {
               </div>
 
               <div className="hidden md:flex items-center gap-1 ml-auto shrink-0">
-                <button onClick={() => setGridCols(3)} className={`p-2 rounded-lg transition-colors ${gridCols === 3 ? 'bg-stone-100 text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}>
+                <button onClick={() => setGridCols(3)} className={`p-2 rounded-lg transition-colors ${gridCols === 3 ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                   <Grid3X3 size={15} />
                 </button>
-                <button onClick={() => setGridCols(4)} className={`p-2 rounded-lg transition-colors ${gridCols === 4 ? 'bg-stone-100 text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}>
+                <button onClick={() => setGridCols(4)} className={`p-2 rounded-lg transition-colors ${gridCols === 4 ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                   <LayoutGrid size={15} />
                 </button>
-                <span className="text-[11px] text-stone-400 ml-2">
+                <span className="text-[11px] text-muted-foreground ml-2">
                   {loading ? '—' : `${products.length} items`}
                 </span>
               </div>
@@ -138,13 +138,13 @@ export default function Products() {
           ) : products.length === 0 ? (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               className="text-center py-28" data-testid="no-products">
-              <div className="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
-                <Search size={24} className="text-stone-300" />
+              <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+                <Search size={24} className="text-muted-foreground" />
               </div>
-              <p className="font-semibold text-xl tracking-tight mb-2 text-stone-800">No products found</p>
-              <p className="text-stone-400 text-sm mb-6">Try a different category or clear your search.</p>
+              <p className="font-semibold text-xl tracking-tight mb-2">No products found</p>
+              <p className="text-muted-foreground text-sm mb-6">Try a different category or clear your search.</p>
               <button onClick={() => { setSearch(''); setCategory(''); }}
-                className="px-6 py-3 bg-stone-900 text-white rounded-xl text-sm font-medium hover:bg-stone-800 transition-colors">
+                className="btn-primary text-sm">
                 Browse All Products
               </button>
             </motion.div>

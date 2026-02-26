@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Phone, MapPin, Star, Shield, Truck, Award } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import HeroCarousel from '@/components/HeroCarousel';
 import Footer from '@/components/Footer';
@@ -33,14 +33,20 @@ function AnimatedNumber({ value, suffix = '' }: { value: string; suffix?: string
 
 /* ── Category cards ── */
 const CATEGORY_CARDS = [
-  { label: 'Marble', desc: 'Italian & Indian luxury marble', image: 'https://images.unsplash.com/photo-1719107647328-dd2134da4fa7?w=600&q=80' },
-  { label: 'Granite', desc: 'Enduring strength & beauty', image: 'https://images.unsplash.com/photo-1690229160941-ed70482540de?w=600&q=80' },
-  { label: 'Tiles', desc: 'Infinite design possibilities', image: 'https://images.unsplash.com/photo-1714648775477-a15cc5aed21f?w=600&q=80' },
-  { label: 'Quartz', desc: 'Zero maintenance luxury', image: 'https://images.unsplash.com/photo-1630756377422-7cfae60dd550?w=600&q=80' },
+  { label: 'Marble', desc: 'Italian & Indian luxury marble for timeless surfaces', image: 'https://images.unsplash.com/photo-1719107647328-dd2134da4fa7?w=600&q=80' },
+  { label: 'Granite', desc: 'Strength meets enduring natural beauty', image: 'https://images.unsplash.com/photo-1690229160941-ed70482540de?w=600&q=80' },
+  { label: 'Tiles', desc: 'Vitrified, ceramic & porcelain — infinite possibilities', image: 'https://images.unsplash.com/photo-1714648775477-a15cc5aed21f?w=600&q=80' },
+  { label: 'Quartz', desc: 'Engineered perfection, zero maintenance luxury', image: 'https://images.unsplash.com/photo-1630756377422-7cfae60dd550?w=600&q=80' },
 ];
 
-/* ── Notable client logos (text-based for now) ── */
 const CLIENTS = ['IIM Ahmedabad', 'Motera Stadium', 'Zydus', 'Adani Group', 'Volkswagen', 'Taco Bell', 'HDFC Bank', 'Sun Pharma'];
+
+const PROMISES = [
+  { icon: Shield, title: 'Quality Guaranteed', desc: 'Every slab hand-inspected before delivery' },
+  { icon: Truck, title: 'Pan-India Delivery', desc: 'Safe, insured transport to your doorstep' },
+  { icon: Award, title: 'Expert Guidance', desc: '20+ years of surface material expertise' },
+  { icon: Star, title: 'Competitive Pricing', desc: 'Direct sourcing means better prices for you' },
+];
 
 export default function Home() {
   const [featured, setFeatured] = useState<Product[]>([]);
@@ -66,26 +72,26 @@ export default function Home() {
       <HeroCarousel />
 
       {/* ── Marquee — trusted by ── */}
-      <section className="py-8 bg-sw-offwhite border-y border-sw-border/30 overflow-hidden">
+      <section className="py-6 border-y border-border/30 overflow-hidden bg-background">
         <div className="flex items-center gap-12 animate-[marquee_30s_linear_infinite] whitespace-nowrap">
           {[...CLIENTS, ...CLIENTS, ...CLIENTS].map((c, i) => (
-            <span key={`${c}-${i}`} className="text-sw-gray/40 text-xs font-semibold tracking-widest uppercase shrink-0">
+            <span key={`${c}-${i}`} className="text-muted-foreground/40 text-[11px] font-semibold tracking-[0.2em] uppercase shrink-0">
               {c}
             </span>
           ))}
         </div>
       </section>
 
-      {/* ── Stats — Apple-style full-bleed numbers ── */}
-      <section className="py-20 md:py-28 px-6 bg-background" data-testid="stats-section">
+      {/* ── Stats — Apple-style ── */}
+      <section className="py-24 md:py-32 px-6 bg-background mandala-pattern" data-testid="stats-section">
         <div className="container-sw">
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-center text-sw-gray text-[11px] tracking-[0.25em] uppercase font-semibold mb-12"
+            className="text-center text-sw-gold text-[11px] tracking-[0.3em] uppercase font-semibold mb-14"
           >
-            Our Story in Numbers
+            Our Legacy in Numbers
           </motion.p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {STATS.map(({ value, label }, i) => (
@@ -102,18 +108,48 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Featured Products — Editorial grid ── */}
+      {/* ── Why Stone World — Glass cards ── */}
+      <section className="py-20 md:py-28 px-6 bg-sw-offwhite">
+        <div className="container-wide">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} className="text-center mb-14">
+            <p className="text-sw-gold text-[11px] uppercase tracking-[0.3em] font-semibold mb-4">Why Choose Us</p>
+            <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+              The Stone World Promise.
+            </h2>
+            <p className="apple-subhead text-base md:text-lg max-w-lg mx-auto">
+              Two decades of delivering Gujarat's finest surface materials.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {PROMISES.map(({ icon: Icon, title, desc }, i) => (
+              <motion.div key={title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.6 }}
+                className="glass-card rounded-2xl p-6 text-center hover:shadow-lg transition-shadow duration-500">
+                <div className="w-12 h-12 rounded-2xl bg-foreground/5 flex items-center justify-center mx-auto mb-4">
+                  <Icon size={22} className="text-sw-gold" strokeWidth={1.5} />
+                </div>
+                <h3 className="font-semibold text-sm tracking-tight mb-2">{title}</h3>
+                <p className="text-muted-foreground text-[13px] leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Featured Products ── */}
       {featured.length > 0 && (
-        <section className="py-20 md:py-28 px-6 bg-sw-offwhite" data-testid="featured-section">
+        <section className="py-20 md:py-28 px-6 bg-background" data-testid="featured-section">
           <div className="container-wide">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} className="text-center mb-14">
-              <p className="text-sw-gold text-[11px] uppercase tracking-[0.25em] font-semibold mb-4">Handpicked</p>
-              <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}>
-                Featured Products.
+              <p className="text-sw-gold text-[11px] uppercase tracking-[0.3em] font-semibold mb-4">Handpicked</p>
+              <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
+                Featured Collection.
               </h2>
               <p className="apple-subhead text-base md:text-lg max-w-md mx-auto">
-                Our most sought-after surface materials.
+                Our most sought-after surface materials, curated for excellence.
               </p>
             </motion.div>
 
@@ -136,15 +172,15 @@ export default function Home() {
       )}
 
       {/* ── Categories — Immersive cards ── */}
-      <section className="py-20 md:py-28 px-6 bg-background" data-testid="categories-section">
+      <section className="py-20 md:py-28 px-6 bg-sw-offwhite mandala-pattern" data-testid="categories-section">
         <div className="container-wide">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} className="text-center mb-14">
-            <p className="text-sw-gold text-[11px] uppercase tracking-[0.25em] font-semibold mb-4">Collections</p>
-            <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)' }}>
+            <p className="text-sw-gold text-[11px] uppercase tracking-[0.3em] font-semibold mb-4">Collections</p>
+            <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
               Explore by Category.
             </h2>
-            <p className="apple-subhead text-base md:text-lg">From quarry to your door.</p>
+            <p className="apple-subhead text-base md:text-lg">From quarry to your doorstep — sourced worldwide.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -158,10 +194,10 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-500" />
                   <div className="absolute bottom-6 left-6">
                     <h3 className="text-white font-semibold text-xl tracking-tight">{cat.label}</h3>
-                    <p className="text-white/40 text-sm mt-1">{cat.desc}</p>
+                    <p className="text-white/50 text-sm mt-1">{cat.desc}</p>
                   </div>
                   <div className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300">
-                    <span className="inline-flex items-center gap-1 bg-white/10 backdrop-blur-xl text-white text-[11px] font-medium px-4 py-2 rounded-full border border-white/10">
+                    <span className="inline-flex items-center gap-1 glass-dark text-white text-[11px] font-medium px-4 py-2 rounded-full">
                       Explore <ArrowUpRight size={10} />
                     </span>
                   </div>
@@ -172,10 +208,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Brand statement — full-bleed dark ── */}
-      <section className="relative overflow-hidden bg-sw-dark text-center py-28 md:py-40 px-6" data-testid="about-section">
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(191,155,94,0.25) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(191,155,94,0.1) 0%, transparent 50%)'
+      {/* ── Brand Statement — Cinematic dark ── */}
+      <section className="relative overflow-hidden bg-sw-dark text-center py-28 md:py-40 px-6 mandala-pattern-dark" data-testid="about-section">
+        <div className="absolute inset-0 opacity-30" style={{
+          backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(184,134,11,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(184,134,11,0.08) 0%, transparent 50%)'
         }} />
         <div className="container-sw relative z-10">
           <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
@@ -195,8 +231,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CTA — Clean final section ── */}
-      <section className="py-24 md:py-36 px-6 bg-background" data-testid="cta-section">
+      {/* ── CTA ── */}
+      <section className="py-24 md:py-36 px-6 bg-background mandala-pattern" data-testid="cta-section">
         <div className="container-sw text-center">
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.8 }}>
