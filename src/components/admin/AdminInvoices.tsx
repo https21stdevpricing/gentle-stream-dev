@@ -622,107 +622,113 @@ export default function AdminInvoices() {
           )}
 
           {useBrandedLayout ? (
-            /* ═══ BRANDED TEMPLATE — strict vertical stacking, NO overlap ═══ */
-            <div className="relative w-full" style={{ minHeight: '1122px' }}>
-              {/* Watermark — absolutely centered, behind content */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
-                <img src="/images/invoice-watermark.png" alt="" className="w-[50%] h-auto opacity-[0.08]" />
+            /* ═══ BRANDED TEMPLATE — per Stone World Agent Guide ═══
+             * A4 = 794×1122px on screen
+             * Header: full width, natural height, flex-shrink: 0
+             * Footer: full width, natural height, flex-shrink: 0, margin-top: auto
+             * Watermark: centered in content area only, opacity 0.08
+             * Content: safe zone with px-[57pt] between header & footer
+             */
+            <div className="relative w-full flex flex-col" style={{ minHeight: '1122px' }}>
+              {/* Header image — fixed at top, never overlaps */}
+              <div style={{ flexShrink: 0 }}>
+                <img src="/images/invoice-header.png" alt="" className="w-full h-auto block" />
               </div>
 
-              {/* Vertical flex container — header → content → footer, no overlap */}
-              <div className="relative flex flex-col" style={{ minHeight: '1122px', zIndex: 1 }}>
-                {/* Header image — fixed height, no flex shrink */}
-                <div style={{ flexShrink: 0 }}>
-                  <img src="/images/invoice-header.png" alt="" className="w-full h-auto" style={{ display: 'block', marginBottom: 0 }} />
+              {/* Content zone — fills remaining space between header & footer */}
+              <div className="relative" style={{ flex: '1 1 auto', padding: '10px 40px', overflow: 'hidden' }}>
+                {/* Watermark — centered within content area only */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
+                  <img src="/images/invoice-watermark.png" alt="" style={{ width: '55%', height: 'auto', opacity: 0.08 }} />
                 </div>
 
-                {/* Content zone — fills middle space */}
-                <div className="px-8 py-3" style={{ flex: '1 1 auto', overflow: 'hidden' }}>
-                {/* Bill To + Document Type */}
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <p className="text-[9px] uppercase font-bold text-slate-400 tracking-[0.15em]">Bill To</p>
-                    <p className="font-bold text-[13px] text-slate-800 mt-0.5">{editing?.customer_name}</p>
-                    {editing?.customer_address && <p className="text-[10px] text-slate-500 mt-0.5 leading-snug">{editing.customer_address}</p>}
-                    {editing?.customer_gstin && <p className="text-[10px] text-slate-500">GSTIN: {editing.customer_gstin}</p>}
-                  </div>
-                  <div className="text-right">
-                    <h1 className="text-base font-black uppercase tracking-[0.15em] text-[#00838f]">
-                      {INVOICE_TYPES.find(x => x.value === editing?.invoice_type)?.label || 'Quotation'}
-                    </h1>
-                    <p className="text-[10px] font-semibold text-slate-600 mt-0.5">{editing?.invoice_number}</p>
-                    <p className="text-[10px] text-slate-400">Date: {new Date(editing?.created_at || Date.now()).toLocaleDateString('en-IN')}</p>
-                    {editing?.due_date && <p className="text-[10px] text-slate-400">Due: {new Date(editing.due_date).toLocaleDateString('en-IN')}</p>}
-                  </div>
-                </div>
-
-                {/* From info */}
-                <div className="flex justify-between items-start mb-3 pb-2 border-b border-slate-200/60">
-                  <div>
-                    {editing?.customer_phone && <p className="text-[10px] text-slate-500">{editing.customer_phone}</p>}
-                    {editing?.customer_email && <p className="text-[10px] text-slate-500">{editing.customer_email}</p>}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[9px] uppercase font-bold text-slate-400 tracking-[0.15em]">From</p>
-                    <p className="font-bold text-[10px] text-slate-700">{COMPANY_INFO.name}</p>
-                    <p className="text-[10px] text-slate-500">{COMPANY_INFO.address}</p>
-                  </div>
-                </div>
-
-                {/* Items Table */}
-                <table className="w-full text-[10px] mb-3">
-                  <thead>
-                    <tr className="border-b-2 border-[#00bcd4]/30 text-[#00838f]">
-                      <th className="text-left py-1.5 px-1.5 font-bold w-6">#</th>
-                      <th className="text-left py-1.5 px-1.5 font-bold">Description</th>
-                      <th className="text-left py-1.5 px-1.5 font-bold w-12">HSN</th>
-                      <th className="text-right py-1.5 px-1.5 font-bold w-14">Qty</th>
-                      <th className="text-right py-1.5 px-1.5 font-bold w-16">Rate (₹)</th>
-                      <th className="text-right py-1.5 px-1.5 font-bold w-20">Amount (₹)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item, i) => (
-                      <tr key={i} className="border-b border-slate-100/80">
-                        <td className="py-1 px-1.5 text-slate-400">{i + 1}</td>
-                        <td className="py-1 px-1.5 font-medium text-slate-800">{item.description}</td>
-                        <td className="py-1 px-1.5 text-[#00838f]">{item.hsn_code}</td>
-                        <td className="py-1 px-1.5 text-right text-slate-600">{item.quantity} {item.unit}</td>
-                        <td className="py-1 px-1.5 text-right text-slate-600">{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        <td className="py-1 px-1.5 text-right font-semibold text-slate-800">{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {/* Totals */}
-                <div className="flex justify-end mb-2">
-                  <div className="w-56 space-y-0.5 text-[10px]">
-                    <div className="flex justify-between text-slate-500"><span>Subtotal</span><span className="font-medium text-slate-700">₹{(editing?.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                    {(editing?.discount_amount || 0) > 0 && <div className="flex justify-between text-rose-500"><span>Discount ({editing?.discount_percent}%)</span><span>-₹{(editing?.discount_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                    {(editing?.cgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>CGST ({editing?.cgst_rate}%)</span><span>₹{(editing?.cgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                    {(editing?.sgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>SGST ({editing?.sgst_rate}%)</span><span>₹{(editing?.sgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                    {(editing?.igst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>IGST ({editing?.igst_rate}%)</span><span>₹{(editing?.igst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                    <div className="flex justify-between font-bold text-[11px] pt-1 mt-0.5 border-t-2 border-[#00bcd4] text-slate-900">
-                      <span>Grand Total</span><span>₹{(editing?.grand_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                {/* Content on top of watermark */}
+                <div className="relative" style={{ zIndex: 1 }}>
+                  {/* Bill To + Document Type */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="text-[9px] uppercase font-bold text-slate-400 tracking-[0.15em]">Bill To</p>
+                      <p className="font-bold text-[13px] text-slate-800 mt-0.5">{editing?.customer_name}</p>
+                      {editing?.customer_address && <p className="text-[10px] text-slate-500 mt-0.5 leading-snug">{editing.customer_address}</p>}
+                      {editing?.customer_gstin && <p className="text-[10px] text-slate-500">GSTIN: {editing.customer_gstin}</p>}
+                    </div>
+                    <div className="text-right">
+                      <h1 className="text-base font-black uppercase tracking-[0.15em] text-[#00838f]">
+                        {INVOICE_TYPES.find(x => x.value === editing?.invoice_type)?.label || 'Quotation'}
+                      </h1>
+                      <p className="text-[10px] font-semibold text-slate-600 mt-0.5">{editing?.invoice_number}</p>
+                      <p className="text-[10px] text-slate-400">Date: {new Date(editing?.created_at || Date.now()).toLocaleDateString('en-IN')}</p>
+                      {editing?.due_date && <p className="text-[10px] text-slate-400">Due: {new Date(editing.due_date).toLocaleDateString('en-IN')}</p>}
                     </div>
                   </div>
-                </div>
-                {editing?.amount_in_words && <p className="text-[9px] italic text-slate-400 mb-2">Amount in words: {editing.amount_in_words}</p>}
 
-                {/* Terms */}
-                {(editing?.terms || editing?.payment_terms) && (
-                  <div className="pt-2 border-t border-slate-100 space-y-1">
-                    {editing?.payment_terms && <p className="text-[9px] text-slate-500"><span className="font-bold uppercase text-slate-400">Payment: </span>{editing.payment_terms}</p>}
-                    {editing?.terms && <div><p className="text-[8px] font-black uppercase text-slate-400 mb-0.5">Terms & Conditions</p><p className="text-[9px] text-slate-500 whitespace-pre-wrap leading-snug">{editing.terms}</p></div>}
+                  {/* From info */}
+                  <div className="flex justify-between items-start mb-3 pb-2 border-b border-slate-200/60">
+                    <div>
+                      {editing?.customer_phone && <p className="text-[10px] text-slate-500">{editing.customer_phone}</p>}
+                      {editing?.customer_email && <p className="text-[10px] text-slate-500">{editing.customer_email}</p>}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[9px] uppercase font-bold text-slate-400 tracking-[0.15em]">From</p>
+                      <p className="font-bold text-[10px] text-slate-700">{COMPANY_INFO.name}</p>
+                      <p className="text-[10px] text-slate-500">{COMPANY_INFO.address}</p>
+                    </div>
                   </div>
-                )}
-                </div>
 
-                {/* Footer image — fixed at bottom */}
-                <div style={{ flexShrink: 0, marginTop: 'auto' }}>
-                  <img src="/images/invoice-bottom.png" alt="" className="w-full h-auto" style={{ display: 'block', marginTop: 0 }} />
+                  {/* Items Table */}
+                  <table className="w-full text-[10px] mb-3">
+                    <thead>
+                      <tr className="border-b-2 border-[#00bcd4]/30 text-[#00838f]">
+                        <th className="text-left py-1.5 px-1.5 font-bold w-6">#</th>
+                        <th className="text-left py-1.5 px-1.5 font-bold">Description</th>
+                        <th className="text-left py-1.5 px-1.5 font-bold w-12">HSN</th>
+                        <th className="text-right py-1.5 px-1.5 font-bold w-14">Qty</th>
+                        <th className="text-right py-1.5 px-1.5 font-bold w-16">Rate (₹)</th>
+                        <th className="text-right py-1.5 px-1.5 font-bold w-20">Amount (₹)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item, i) => (
+                        <tr key={i} className="border-b border-slate-100/80">
+                          <td className="py-1 px-1.5 text-slate-400">{i + 1}</td>
+                          <td className="py-1 px-1.5 font-medium text-slate-800">{item.description}</td>
+                          <td className="py-1 px-1.5 text-[#00838f]">{item.hsn_code}</td>
+                          <td className="py-1 px-1.5 text-right text-slate-600">{item.quantity} {item.unit}</td>
+                          <td className="py-1 px-1.5 text-right text-slate-600">{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          <td className="py-1 px-1.5 text-right font-semibold text-slate-800">{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {/* Totals */}
+                  <div className="flex justify-end mb-2">
+                    <div className="w-56 space-y-0.5 text-[10px]">
+                      <div className="flex justify-between text-slate-500"><span>Subtotal</span><span className="font-medium text-slate-700">₹{(editing?.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
+                      {(editing?.discount_amount || 0) > 0 && <div className="flex justify-between text-rose-500"><span>Discount ({editing?.discount_percent}%)</span><span>-₹{(editing?.discount_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                      {(editing?.cgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>CGST ({editing?.cgst_rate}%)</span><span>₹{(editing?.cgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                      {(editing?.sgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>SGST ({editing?.sgst_rate}%)</span><span>₹{(editing?.sgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                      {(editing?.igst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>IGST ({editing?.igst_rate}%)</span><span>₹{(editing?.igst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                      <div className="flex justify-between font-bold text-[11px] pt-1 mt-0.5 border-t-2 border-[#00bcd4] text-slate-900">
+                        <span>Grand Total</span><span>₹{(editing?.grand_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {editing?.amount_in_words && <p className="text-[9px] italic text-slate-400 mb-2">Amount in words: {editing.amount_in_words}</p>}
+
+                  {/* Terms */}
+                  {(editing?.terms || editing?.payment_terms) && (
+                    <div className="pt-2 border-t border-slate-100 space-y-1">
+                      {editing?.payment_terms && <p className="text-[9px] text-slate-500"><span className="font-bold uppercase text-slate-400">Payment: </span>{editing.payment_terms}</p>}
+                      {editing?.terms && <div><p className="text-[8px] font-black uppercase text-slate-400 mb-0.5">Terms & Conditions</p><p className="text-[9px] text-slate-500 whitespace-pre-wrap leading-snug">{editing.terms}</p></div>}
+                    </div>
+                  )}
                 </div>
+              </div>
+
+              {/* Footer image — fixed at bottom, never overlaps */}
+              <div style={{ flexShrink: 0, marginTop: 'auto' }}>
+                <img src="/images/invoice-bottom.png" alt="" className="w-full h-auto block" />
               </div>
             </div>
           ) : (
