@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Truck, Award, Star, ChevronRight, Play, Quote } from 'lucide-react';
+import { ArrowRight, Shield, Truck, Award, Star, ChevronRight, Quote } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import HeroCarousel from '@/components/HeroCarousel';
 import Footer from '@/components/Footer';
-import { ProductCard, ProductDetailPanel } from '@/components/ProductCard';
+import { ProductCard } from '@/components/ProductCard';
 import { getProducts, getSiteInfo } from '@/utils/api';
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import type { Product, SiteInfo } from '@/utils/mockData';
@@ -51,21 +51,21 @@ const SHOWCASE_SLIDES = [
   {
     title: 'Italian Statuario',
     subtitle: 'The Pinnacle of Marble',
-    desc: 'Sourced directly from Carrara, Italy. Every vein tells a story of millions of years. Our premium Statuario collection brings museum-grade elegance to your space.',
+    desc: 'Sourced directly from Carrara, Italy. Every vein tells a story of millions of years.',
     image: 'https://images.unsplash.com/photo-1719107647328-dd2134da4fa7?w=1200&q=85',
     specs: ['Thickness: 18–20mm', 'Finish: Polished / Honed', 'Origin: Carrara, Italy'],
   },
   {
     title: 'Cosmic Black Granite',
     subtitle: 'Eternal Strength',
-    desc: 'Deep galaxies frozen in stone. Cosmic Black transforms any surface into a statement piece that withstands the test of time.',
+    desc: 'Deep galaxies frozen in stone. A statement piece that withstands the test of time.',
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=85',
     specs: ['Thickness: 20–30mm', 'Finish: Polished / Leathered', 'Origin: South India'],
   },
   {
     title: 'Travertine Collection',
     subtitle: 'Warmth of the Earth',
-    desc: 'Natural travertine with its organic texture brings Mediterranean warmth to any architectural vision, from floors to feature walls.',
+    desc: 'Natural travertine with organic texture brings Mediterranean warmth to any vision.',
     image: 'https://images.unsplash.com/photo-1615873968403-89e068629265?w=1200&q=85',
     specs: ['Thickness: 15–20mm', 'Finish: Tumbled / Filled', 'Origin: Turkey / Iran'],
   },
@@ -79,7 +79,6 @@ const TESTIMONIALS = [
 
 export default function Home() {
   const [featured, setFeatured] = useState<Product[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [siteInfo, setSiteInfo] = useState<Partial<SiteInfo>>({});
   const [showcaseIdx, setShowcaseIdx] = useState(0);
 
@@ -96,7 +95,6 @@ export default function Home() {
     { value: siteInfo.stat_team || '25+', label: 'Team Members' },
   ];
 
-  // Parallax ref
   const parallaxRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: parallaxRef, offset: ['start end', 'end start'] });
   const parallaxY = useTransform(scrollYProgress, [0, 1], ['0%', '-15%']);
@@ -117,50 +115,55 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Product Showcase — Apple-style full-width feature slides ── */}
-      <section className="bg-[#f5f5f7]" data-testid="showcase-section">
+      {/* ── Stats — bold numbers ── */}
+      <section className="py-24 md:py-32 px-6 bg-background mandala-pattern" data-testid="stats-section">
+        <div className="container-sw">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+            {STATS.map(({ value, label }, i) => (
+              <motion.div key={label} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                className="text-center">
+                <div className="font-bold tracking-tight text-foreground" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', letterSpacing: '-0.04em' }}>
+                  <AnimatedNumber value={value} />
+                </div>
+                <p className="text-muted-foreground text-xs mt-2 tracking-wider uppercase">{label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Signature Collection showcase ── */}
+      <section className="bg-[hsl(var(--muted))]" data-testid="showcase-section">
         <div className="container-wide mx-auto px-6 py-20 md:py-28">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} className="text-center mb-16">
+            viewport={{ once: true }} className="text-center mb-14">
             <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
               Signature Collection.
             </h2>
-            <p className="apple-subhead text-base md:text-lg max-w-md mx-auto">
-              Materials that define spaces.
-            </p>
+            <p className="apple-subhead text-base md:text-lg max-w-md mx-auto">Materials that define spaces.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 bg-background rounded-3xl overflow-hidden shadow-lg">
-            {/* Image side */}
             <div className="relative aspect-square lg:aspect-auto overflow-hidden">
               <AnimatePresence mode="wait">
-                <motion.img
-                  key={showcaseIdx}
-                  src={SHOWCASE_SLIDES[showcaseIdx].image}
+                <motion.img key={showcaseIdx} src={SHOWCASE_SLIDES[showcaseIdx].image}
                   alt={SHOWCASE_SLIDES[showcaseIdx].title}
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-full object-cover"
-                />
+                  initial={{ opacity: 0, scale: 1.04 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                  transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-full h-full object-cover" />
               </AnimatePresence>
             </div>
 
-            {/* Content side */}
             <div className="flex flex-col justify-center p-8 md:p-14">
               <AnimatePresence mode="wait">
-                <motion.div
-                  key={showcaseIdx}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.5 }}
-                >
+                <motion.div key={showcaseIdx}
+                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.5 }}>
                   <p className="text-[11px] text-muted-foreground uppercase tracking-[0.2em] font-medium mb-3">
                     {SHOWCASE_SLIDES[showcaseIdx].subtitle}
                   </p>
-                  <h3 className="font-semibold text-3xl md:text-4xl tracking-tight mb-4 leading-tight">
+                  <h3 className="font-bold text-3xl md:text-4xl tracking-tight mb-4 leading-tight">
                     {SHOWCASE_SLIDES[showcaseIdx].title}
                   </h3>
                   <p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-8">
@@ -168,7 +171,7 @@ export default function Home() {
                   </p>
                   <div className="flex flex-wrap gap-2 mb-8">
                     {SHOWCASE_SLIDES[showcaseIdx].specs.map(s => (
-                      <span key={s} className="text-[11px] bg-[#f5f5f7] text-muted-foreground px-3 py-1.5 rounded-full font-medium">
+                      <span key={s} className="text-[11px] bg-[hsl(var(--muted))] text-muted-foreground px-3 py-1.5 rounded-full font-medium">
                         {s}
                       </span>
                     ))}
@@ -179,16 +182,12 @@ export default function Home() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Slide nav dots */}
               <div className="flex gap-2 mt-10">
                 {SHOWCASE_SLIDES.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setShowcaseIdx(i)}
+                  <button key={i} onClick={() => setShowcaseIdx(i)}
                     className={`h-1.5 rounded-full transition-all duration-500 ${
                       i === showcaseIdx ? 'bg-foreground w-8' : 'bg-foreground/15 w-1.5 hover:bg-foreground/30'
-                    }`}
-                  />
+                    }`} />
                 ))}
               </div>
             </div>
@@ -196,25 +195,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Stats — large, centered ── */}
-      <section className="py-28 md:py-36 px-6 bg-background" data-testid="stats-section">
-        <div className="container-sw">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            {STATS.map(({ value, label }, i) => (
-              <motion.div key={label} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="text-center">
-                <div className="font-semibold tracking-tight text-foreground" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', letterSpacing: '-0.04em' }}>
-                  <AnimatedNumber value={value} />
-                </div>
-                <p className="text-muted-foreground text-xs mt-2 tracking-wider uppercase">{label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Categories — immersive full-width cards ── */}
+      {/* ── Categories — clean card grid ── */}
       <section className="py-20 md:py-28 px-6 bg-background" data-testid="categories-section">
         <div className="container-wide mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
@@ -236,7 +217,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
                     <div>
-                      <h3 className="text-white font-semibold text-xl tracking-tight">{cat.label}</h3>
+                      <h3 className="text-white font-bold text-xl tracking-tight">{cat.label}</h3>
                       <p className="text-white/50 text-sm mt-0.5">{cat.desc}</p>
                     </div>
                     <span className="text-white/40 group-hover:text-white/80 transition-colors">
@@ -252,14 +233,12 @@ export default function Home() {
 
       {/* ── Featured Products ── */}
       {featured.length > 0 && (
-        <section className="py-20 md:py-28 px-6 bg-[#f5f5f7]" data-testid="featured-section">
+        <section className="py-20 md:py-28 px-6 bg-[hsl(var(--muted))]" data-testid="featured-section">
           <div className="container-wide mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} className="flex items-end justify-between mb-12">
               <div>
-                <h2 className="apple-headline mb-2" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
-                  Featured.
-                </h2>
+                <h2 className="apple-headline mb-2" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>Featured.</h2>
                 <p className="apple-subhead text-base">Our most sought-after materials.</p>
               </div>
               <Link to="/products" className="hidden md:inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:opacity-70 transition-opacity">
@@ -271,7 +250,7 @@ export default function Home() {
               {featured.map((p, i) => (
                 <motion.div key={p.id} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
-                  <ProductCard product={p} onClick={setSelectedProduct} />
+                  <ProductCard product={p} onClick={() => {}} linkTo={`/products/${p.slug}`} />
                 </motion.div>
               ))}
             </div>
@@ -290,16 +269,14 @@ export default function Home() {
         <div className="container-wide mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} className="text-center mb-14">
-            <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
-              The Promise.
-            </h2>
+            <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>The Promise.</h2>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {PROMISES.map(({ icon: Icon, title, desc }, i) => (
               <motion.div key={title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.6 }}
-                className="bg-[#f5f5f7] rounded-2xl p-6 text-center group hover:bg-foreground hover:text-background transition-all duration-500">
+                className="bg-[hsl(var(--muted))] rounded-2xl p-6 text-center group hover:bg-foreground hover:text-background transition-all duration-500">
                 <div className="w-12 h-12 rounded-full bg-background/80 group-hover:bg-white/10 flex items-center justify-center mx-auto mb-4 transition-colors duration-500">
                   <Icon size={22} strokeWidth={1.5} className="text-foreground group-hover:text-background transition-colors duration-500" />
                 </div>
@@ -312,13 +289,11 @@ export default function Home() {
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="py-20 md:py-28 px-6 bg-[#f5f5f7]" data-testid="testimonials">
+      <section className="py-20 md:py-28 px-6 bg-[hsl(var(--muted))]" data-testid="testimonials">
         <div className="container-wide mx-auto">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} className="text-center mb-14">
-            <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
-              What they say.
-            </h2>
+            <h2 className="apple-headline mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>What they say.</h2>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -338,22 +313,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Parallax brand statement ── */}
-      <section ref={parallaxRef} className="relative overflow-hidden bg-[#1d1d1f] text-center py-32 md:py-44 px-6" data-testid="about-section">
+      {/* ── Brand statement ── */}
+      <section ref={parallaxRef} className="relative overflow-hidden bg-foreground text-center py-32 md:py-44 px-6" data-testid="about-section">
         <motion.div style={{ y: parallaxY }} className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1630756377422-7cfae60dd550?w=1920&q=60"
-            alt=""
-            className="w-full h-[120%] object-cover opacity-20"
-          />
+          <img src="https://images.unsplash.com/photo-1630756377422-7cfae60dd550?w=1920&q=60" alt=""
+            className="w-full h-[120%] object-cover opacity-15" />
         </motion.div>
         <div className="container-sw relative z-10">
           <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}>
-            <h2 className="font-semibold text-white leading-[1.05] mb-6" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', letterSpacing: '-0.04em' }}>
+            <h2 className="font-bold text-background leading-[1.05] mb-6" style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', letterSpacing: '-0.04em' }}>
               Two decades of<br />surface excellence.
             </h2>
-            <p className="text-white/40 text-base md:text-lg max-w-lg mx-auto leading-relaxed mb-10">
+            <p className="text-background/40 text-base md:text-lg max-w-lg mx-auto leading-relaxed mb-10">
               {siteInfo.about_short || "Founded in 2003, Stone World has grown to be Gujarat's most trusted name in premium surfaces."}
             </p>
             <Link to="/about" data-testid="about-cta-btn"
@@ -365,7 +337,7 @@ export default function Home() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-24 md:py-36 px-6 bg-background" data-testid="cta-section">
+      <section className="py-24 md:py-36 px-6 bg-background mandala-pattern" data-testid="cta-section">
         <div className="container-sw text-center">
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.8 }}>
@@ -389,12 +361,6 @@ export default function Home() {
       </section>
 
       <Footer siteInfo={siteInfo} />
-
-      <AnimatePresence>
-        {selectedProduct && (
-          <ProductDetailPanel product={selectedProduct} onClose={() => setSelectedProduct(null)} />
-        )}
-      </AnimatePresence>
     </div>
   );
 }

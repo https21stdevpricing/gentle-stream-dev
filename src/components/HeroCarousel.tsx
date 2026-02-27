@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const SLIDES = [
   {
@@ -42,203 +42,154 @@ const SLIDES = [
   },
 ];
 
+const AUTOPLAY_MS = 5500;
+
 export default function HeroCarousel() {
   const [active, setActive] = useState(0);
-  const [autoplay, setAutoplay] = useState(true);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
-
-  // Progress bar animation
-  const progress = useMotionValue(0);
 
   const goTo = useCallback((idx: number) => {
     setActive(idx);
-    setAutoplay(false);
-    progress.set(0);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setAutoplay(true), 10000);
-  }, [progress]);
+    setProgress(0);
+  }, []);
 
   const next = useCallback(() => setActive(a => (a + 1) % SLIDES.length), []);
   const prev = useCallback(() => setActive(a => (a - 1 + SLIDES.length) % SLIDES.length), []);
 
   // Autoplay with progress
   useEffect(() => {
-    if (!autoplay) return;
-    progress.set(0);
-    const ctrl = animate(progress, 100, { duration: 6, ease: 'linear' });
-    const t = setTimeout(() => {
-      setActive(a => (a + 1) % SLIDES.length);
-    }, 6000);
-    return () => { ctrl.stop(); clearTimeout(t); };
-  }, [autoplay, active, progress]);
+    if (paused) return;
+    setProgress(0);
+    const tick = 50;
+    const steps = AUTOPLAY_MS / tick;
+    let step = 0;
+    intervalRef.current = setInterval(() => {
+      step++;
+      setProgress((step / steps) * 100);
+      if (step >= steps) {
+        setActive(a => (a + 1) % SLIDES.length);
+        step = 0;
+        setProgress(0);
+      }
+    }, tick);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [active, paused]);
 
-  // Touch/swipe support
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) goTo((active + 1) % SLIDES.length);
-      else goTo((active - 1 + SLIDES.length) % SLIDES.length);
-    }
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) diff > 0 ? goTo((active + 1) % SLIDES.length) : goTo((active - 1 + SLIDES.length) % SLIDES.length);
   };
 
   const slide = SLIDES[active];
 
-  const scrollDown = () => {
-    window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-  };
-
   return (
-    <section
-      className="relative w-full h-[100svh] overflow-hidden bg-[#0a0a0a]"
-      data-testid="hero-carousel"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* Background images */}
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={slide.key}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="absolute inset-0 z-0"
+    <section className="pt-[48px]" data-testid="hero-carousel">
+      <div className="container-wide mx-auto px-4 md:px-6 py-4 md:py-6">
+        <div
+          className="relative w-full overflow-hidden rounded-3xl bg-foreground/5"
+          style={{ aspectRatio: '16/7' }}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
-          <img
-            src={slide.image}
-            alt={slide.label}
-            className="w-full h-full object-cover"
-            draggable={false}
-          />
-        </motion.div>
-      </AnimatePresence>
+          {/* Background images */}
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={slide.key}
+              src={slide.image}
+              alt={slide.label}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
+              className="absolute inset-0 w-full h-full object-cover"
+              draggable={false}
+            />
+          </AnimatePresence>
 
-      {/* Minimal gradient overlay — less dark, more cinematic */}
-      <div className="absolute inset-0 z-[1]" style={{
-        background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.25) 100%)'
-      }} />
+          {/* Subtle gradient for text readability — no heavy dark overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
-      {/* Nav arrows — minimal, edge-aligned */}
-      <button
-        onClick={prev}
-        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-[5] w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all duration-300"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft size={18} strokeWidth={1.5} />
-      </button>
-      <button
-        onClick={() => goTo((active + 1) % SLIDES.length)}
-        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-[5] w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all duration-300"
-        aria-label="Next slide"
-      >
-        <ChevronRight size={18} strokeWidth={1.5} />
-      </button>
-
-      {/* Content */}
-      <div className="absolute inset-0 z-[3] flex flex-col items-center justify-end pb-[18%] md:pb-[14%] px-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`content-${active}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="text-center max-w-2xl"
+          {/* Nav arrows — pill-shaped, glass morphism */}
+          <button
+            onClick={prev}
+            className="absolute left-3 md:left-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:bg-white/25 hover:text-white transition-all duration-200 active:scale-95"
+            aria-label="Previous"
           >
-            <motion.h1
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              className="text-white font-semibold leading-[1.05] mb-4"
-              style={{ fontSize: 'clamp(2.5rem, 7vw, 5rem)', letterSpacing: '-0.04em' }}
-            >
-              {slide.tagline}
-            </motion.h1>
+            <ChevronLeft size={16} strokeWidth={2} />
+          </button>
+          <button
+            onClick={() => goTo((active + 1) % SLIDES.length)}
+            className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:bg-white/25 hover:text-white transition-all duration-200 active:scale-95"
+            aria-label="Next"
+          >
+            <ChevronRight size={16} strokeWidth={2} />
+          </button>
 
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.5 }}
-              className="text-white/50 text-sm md:text-base max-w-md mx-auto mb-8 leading-relaxed font-light"
-            >
-              {slide.description}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25, duration: 0.4 }}
-              className="flex flex-wrap gap-3 justify-center"
-            >
-              <Link
-                to={slide.link}
-                data-testid="hero-explore-btn"
-                className="inline-flex items-center gap-2 text-sm font-medium px-7 py-3 rounded-full bg-white text-black transition-all duration-300 hover:bg-white/90 hover:shadow-lg active:scale-[0.97]"
+          {/* Content — bottom-left aligned, clean */}
+          <div className="absolute bottom-0 left-0 right-0 z-[3] p-5 md:p-10">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`content-${active}`}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                className="max-w-lg"
               >
-                {slide.cta} <ArrowRight size={14} />
-              </Link>
-              <Link
-                to="/support"
-                className="inline-flex items-center gap-2 text-white/50 text-sm font-medium hover:text-white/80 transition-colors duration-300"
-              >
-                Get a quote →
-              </Link>
-            </motion.div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
+                <h2
+                  className="text-white font-bold leading-[1.05] mb-2"
+                  style={{ fontSize: 'clamp(1.75rem, 4vw, 3.25rem)', letterSpacing: '-0.03em' }}
+                >
+                  {slide.tagline}
+                </h2>
+                <p className="text-white/60 text-sm md:text-base mb-5 leading-relaxed max-w-sm">
+                  {slide.description}
+                </p>
+                <Link
+                  to={slide.link}
+                  data-testid="hero-explore-btn"
+                  className="inline-flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-full bg-white text-foreground hover:bg-white/90 transition-all duration-200 active:scale-[0.97]"
+                >
+                  {slide.cta} <ArrowRight size={14} />
+                </Link>
+              </motion.div>
+            </AnimatePresence>
 
-      {/* Progress indicators — minimal bottom bar */}
-      <div className="absolute bottom-[6%] left-0 right-0 z-[4]" data-testid="material-tabs">
-        <div className="flex justify-center gap-4 md:gap-6">
-          {SLIDES.map((s, i) => (
-            <button
-              key={s.key}
-              onClick={() => goTo(i)}
-              data-testid={`material-tab-${s.key}`}
-              className="group flex flex-col items-center gap-2"
-            >
-              <span className={`text-[11px] font-medium tracking-wide transition-colors duration-300 ${
-                i === active ? 'text-white' : 'text-white/30 hover:text-white/60'
-              }`}>
-                {s.label}
-              </span>
-              <div className="w-12 h-[2px] rounded-full overflow-hidden bg-white/10">
-                {i === active ? (
-                  <motion.div
-                    className="h-full bg-white rounded-full"
-                    style={{ width: useTransform(progress, [0, 100], ['0%', '100%']) }}
-                  />
-                ) : (
-                  <div className="h-full w-0" />
-                )}
-              </div>
-            </button>
-          ))}
+            {/* Tab indicators — bottom right */}
+            <div className="absolute bottom-5 md:bottom-10 right-5 md:right-10 flex items-center gap-2" data-testid="material-tabs">
+              {SLIDES.map((s, i) => (
+                <button
+                  key={s.key}
+                  onClick={() => goTo(i)}
+                  data-testid={`material-tab-${s.key}`}
+                  className="group relative"
+                >
+                  <span className={`block text-[10px] font-medium tracking-wide mb-1.5 text-right transition-colors duration-200 ${
+                    i === active ? 'text-white' : 'text-white/30 hover:text-white/60'
+                  }`}>
+                    {s.label}
+                  </span>
+                  <div className="w-12 h-[2px] rounded-full overflow-hidden bg-white/10">
+                    <div
+                      className="h-full bg-white rounded-full transition-all"
+                      style={{
+                        width: i === active ? `${progress}%` : '0%',
+                        transition: i === active ? 'width 50ms linear' : 'width 300ms ease',
+                      }}
+                    />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Scroll indicator */}
-      <motion.button
-        onClick={scrollDown}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 1 }}
-        className="absolute bottom-[2%] left-1/2 -translate-x-1/2 z-[4] text-white/20 hover:text-white/50 transition-colors"
-      >
-        <motion.div animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}>
-          <ChevronDown size={18} strokeWidth={1.5} />
-        </motion.div>
-      </motion.button>
     </section>
   );
 }
