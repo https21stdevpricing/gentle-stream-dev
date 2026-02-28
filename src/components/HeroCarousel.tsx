@@ -42,149 +42,214 @@ const SLIDES = [
   },
 ];
 
-const AUTOPLAY_MS = 5500;
+const AUTOPLAY_MS = 6000;
 
 export default function HeroCarousel() {
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [direction, setDirection] = useState(1);
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
 
-  const goTo = useCallback((idx: number) => {
+  const goTo = useCallback((idx: number, dir?: number) => {
+    setDirection(dir ?? (idx > active ? 1 : -1));
     setActive(idx);
+    setProgress(0);
+  }, [active]);
+
+  const next = useCallback(() => {
+    setDirection(1);
+    setActive(a => (a + 1) % SLIDES.length);
     setProgress(0);
   }, []);
 
-  const next = useCallback(() => setActive(a => (a + 1) % SLIDES.length), []);
-  const prev = useCallback(() => setActive(a => (a - 1 + SLIDES.length) % SLIDES.length), []);
+  const prev = useCallback(() => {
+    setDirection(-1);
+    setActive(a => (a - 1 + SLIDES.length) % SLIDES.length);
+    setProgress(0);
+  }, []);
 
-  // Autoplay with progress
+  // Autoplay
   useEffect(() => {
     if (paused) return;
     setProgress(0);
-    const tick = 50;
+    const tick = 40;
     const steps = AUTOPLAY_MS / tick;
     let step = 0;
-    intervalRef.current = setInterval(() => {
+    const interval = setInterval(() => {
       step++;
       setProgress((step / steps) * 100);
       if (step >= steps) {
+        setDirection(1);
         setActive(a => (a + 1) % SLIDES.length);
         step = 0;
         setProgress(0);
       }
     }, tick);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => clearInterval(interval);
   }, [active, paused]);
 
-  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) diff > 0 ? goTo((active + 1) % SLIDES.length) : goTo((active - 1 + SLIDES.length) % SLIDES.length);
+  // Touch handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
   };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dx = touchStartX.current - e.changedTouches[0].clientX;
+    const dy = Math.abs(touchStartY.current - e.changedTouches[0].clientY);
+    if (Math.abs(dx) > 40 && Math.abs(dx) > dy) {
+      if (dx > 0) next();
+      else prev();
+    }
+  };
+
+  // Keyboard
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') next();
+      if (e.key === 'ArrowLeft') prev();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [next, prev]);
 
   const slide = SLIDES[active];
 
+  const imageVariants = {
+    enter: (d: number) => ({ opacity: 0, scale: 1.08, x: d > 0 ? 60 : -60 }),
+    center: { opacity: 1, scale: 1, x: 0, transition: { duration: 0.7, ease: [0.25, 0.1, 0.25, 1] as const } },
+    exit: (d: number) => ({ opacity: 0, scale: 0.98, x: d > 0 ? -40 : 40, transition: { duration: 0.5 } }),
+  };
+
+  const textVariants = {
+    enter: { opacity: 0, y: 30, filter: 'blur(4px)' },
+    center: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] as const } },
+    exit: { opacity: 0, y: -16, filter: 'blur(2px)', transition: { duration: 0.3 } },
+  };
+
   return (
-    <section className="pt-[48px]" data-testid="hero-carousel">
-      <div className="container-wide mx-auto px-4 md:px-6 py-4 md:py-6">
+    <section className="pt-[56px]" data-testid="hero-carousel">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-4 md:py-6">
         <div
-          className="relative w-full overflow-hidden rounded-3xl bg-foreground/5"
-          style={{ aspectRatio: '16/7' }}
+          className="relative w-full overflow-hidden rounded-[28px] bg-muted/30"
+          style={{ aspectRatio: '21/9' }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
+          role="region"
+          aria-label="Featured products carousel"
+          aria-roledescription="carousel"
         >
-          {/* Background images */}
-          <AnimatePresence mode="wait">
+          {/* Background image with directional animation */}
+          <AnimatePresence mode="wait" custom={direction}>
             <motion.img
               key={slide.key}
               src={slide.image}
               alt={slide.label}
-              initial={{ opacity: 0, scale: 1.04 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
+              custom={direction}
+              variants={imageVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
               className="absolute inset-0 w-full h-full object-cover"
               draggable={false}
             />
           </AnimatePresence>
 
-          {/* Subtle gradient for text readability — no heavy dark overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          {/* Minimal gradient — just enough for text */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent pointer-events-none" />
 
-          {/* Nav arrows — pill-shaped, glass morphism */}
+          {/* Navigation arrows — glassmorphism pills */}
           <button
             onClick={prev}
-            className="absolute left-3 md:left-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:bg-white/25 hover:text-white transition-all duration-200 active:scale-95"
-            aria-label="Previous"
+            className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center text-white/70 hover:bg-white/20 hover:text-white hover:scale-105 transition-all duration-300 active:scale-95"
+            aria-label="Previous slide"
           >
-            <ChevronLeft size={16} strokeWidth={2} />
+            <ChevronLeft size={18} strokeWidth={1.8} />
           </button>
           <button
-            onClick={() => goTo((active + 1) % SLIDES.length)}
-            className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/15 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:bg-white/25 hover:text-white transition-all duration-200 active:scale-95"
-            aria-label="Next"
+            onClick={next}
+            className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center text-white/70 hover:bg-white/20 hover:text-white hover:scale-105 transition-all duration-300 active:scale-95"
+            aria-label="Next slide"
           >
-            <ChevronRight size={16} strokeWidth={2} />
+            <ChevronRight size={18} strokeWidth={1.8} />
           </button>
 
-          {/* Content — bottom-left aligned, clean */}
-          <div className="absolute bottom-0 left-0 right-0 z-[3] p-5 md:p-10">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`content-${active}`}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                className="max-w-lg"
-              >
-                <h2
-                  className="text-white font-bold leading-[1.05] mb-2"
-                  style={{ fontSize: 'clamp(1.75rem, 4vw, 3.25rem)', letterSpacing: '-0.03em' }}
+          {/* Content — bottom-left with staggered text animation */}
+          <div className="absolute bottom-0 left-0 right-0 z-[3] p-6 md:p-10 lg:p-12">
+            <div className="flex items-end justify-between gap-6">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`content-${active}`}
+                  variants={textVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="max-w-xl"
                 >
-                  {slide.tagline}
-                </h2>
-                <p className="text-white/60 text-sm md:text-base mb-5 leading-relaxed max-w-sm">
-                  {slide.description}
-                </p>
-                <Link
-                  to={slide.link}
-                  data-testid="hero-explore-btn"
-                  className="inline-flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-full bg-white text-foreground hover:bg-white/90 transition-all duration-200 active:scale-[0.97]"
-                >
-                  {slide.cta} <ArrowRight size={14} />
-                </Link>
-              </motion.div>
-            </AnimatePresence>
+                  <span className="inline-block text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.2em] text-white/50 mb-2 md:mb-3">
+                    {slide.label}
+                  </span>
+                  <h2
+                    className="text-white font-bold leading-[1.02] mb-3"
+                    style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', letterSpacing: '-0.035em' }}
+                  >
+                    {slide.tagline}
+                  </h2>
+                  <p className="text-white/50 text-sm md:text-[15px] mb-5 md:mb-6 leading-relaxed max-w-md">
+                    {slide.description}
+                  </p>
+                  <Link
+                    to={slide.link}
+                    data-testid="hero-explore-btn"
+                    className="group inline-flex items-center gap-2.5 text-[13px] font-semibold px-6 py-3 rounded-full bg-white/95 text-neutral-900 hover:bg-white transition-all duration-300 active:scale-[0.97] shadow-lg shadow-black/10"
+                  >
+                    {slide.cta}
+                    <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform duration-300" />
+                  </Link>
+                </motion.div>
+              </AnimatePresence>
 
-            {/* Tab indicators — bottom right */}
-            <div className="absolute bottom-5 md:bottom-10 right-5 md:right-10 flex items-center gap-2" data-testid="material-tabs">
+              {/* Progress indicators — bottom right */}
+              <div className="hidden sm:flex items-end gap-3" data-testid="material-tabs">
+                {SLIDES.map((s, i) => (
+                  <button
+                    key={s.key}
+                    onClick={() => goTo(i)}
+                    data-testid={`material-tab-${s.key}`}
+                    className="group flex flex-col items-end gap-1.5"
+                  >
+                    <span className={`text-[10px] font-medium tracking-wider transition-all duration-300 ${
+                      i === active ? 'text-white opacity-100' : 'text-white/25 group-hover:text-white/50'
+                    }`}>
+                      {s.label}
+                    </span>
+                    <div className="w-14 h-[2px] rounded-full overflow-hidden bg-white/10">
+                      <motion.div
+                        className="h-full bg-white rounded-full"
+                        initial={{ width: '0%' }}
+                        animate={{ width: i === active ? `${progress}%` : '0%' }}
+                        transition={i === active ? { duration: 0.04, ease: 'linear' } : { duration: 0.3, ease: 'easeOut' }}
+                      />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile dots */}
+            <div className="flex sm:hidden justify-center gap-2 mt-4">
               {SLIDES.map((s, i) => (
                 <button
                   key={s.key}
                   onClick={() => goTo(i)}
-                  data-testid={`material-tab-${s.key}`}
-                  className="group relative"
-                >
-                  <span className={`block text-[10px] font-medium tracking-wide mb-1.5 text-right transition-colors duration-200 ${
-                    i === active ? 'text-white' : 'text-white/30 hover:text-white/60'
-                  }`}>
-                    {s.label}
-                  </span>
-                  <div className="w-12 h-[2px] rounded-full overflow-hidden bg-white/10">
-                    <div
-                      className="h-full bg-white rounded-full transition-all"
-                      style={{
-                        width: i === active ? `${progress}%` : '0%',
-                        transition: i === active ? 'width 50ms linear' : 'width 300ms ease',
-                      }}
-                    />
-                  </div>
-                </button>
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === active ? 'w-6 bg-white' : 'w-1.5 bg-white/30'
+                  }`}
+                  aria-label={`Go to ${s.label}`}
+                />
               ))}
             </div>
           </div>

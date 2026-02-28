@@ -4,7 +4,7 @@ import {
   Copy, Eye, Printer, ChevronDown, Palette, Layout, Info, HelpCircle,
   IndianRupee, Building2, Phone, Mail, MapPin, Hash, Calendar, Percent,
   Package, FileDown, CheckCircle2, AlertCircle, Sparkles, GripVertical,
-  ArrowUp, ArrowDown, RotateCcw
+  ArrowUp, ArrowDown, RotateCcw, CreditCard, Landmark, PenLine
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -83,6 +83,13 @@ const COMPANY_INFO = {
   email: 'Stoneworld1947@gmail.com',
 };
 
+const BANK_DETAILS = {
+  bank: 'HDFC Bank',
+  account: 'XXXXXXXXXXXX',
+  ifsc: 'HDFC0XXXXXX',
+  branch: 'Ahmedabad',
+};
+
 const DEFAULT_TERMS = `1. Prices are subject to change without prior notice.
 2. Payment due within 15 days from the date of invoice.
 3. Goods once sold will not be taken back.
@@ -139,6 +146,8 @@ function numberToWords(num: number): string {
   return result + ' Only';
 }
 
+const fmt = (n: number) => n.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
 const emptyItem: InvoiceItem = {
   description: '', hsn_code: '', quantity: 1, unit: 'sqft', rate: 0, amount: 0,
   discount_percent: 0, tax_rate: 18, tax_amount: 0, total: 0, sort_order: 0,
@@ -149,7 +158,7 @@ function Field({ label, hint, icon: Icon, children, className = '' }: {
   label: string; hint?: string; icon?: any; children: React.ReactNode; className?: string;
 }) {
   return (
-    <div className={`space-y-1 ${className}`}>
+    <div className={`space-y-1.5 ${className}`}>
       <label className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
         {Icon && <Icon size={11} />}
         {label}
@@ -167,8 +176,8 @@ function Field({ label, hint, icon: Icon, children, className = '' }: {
   );
 }
 
-const inputCls = "w-full px-3 py-2.5 bg-muted/60 border border-border/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all placeholder:text-muted-foreground/40";
-const selectCls = "w-full px-3 py-2.5 bg-muted/60 border border-border/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all";
+const inputCls = "w-full px-3 py-2.5 bg-muted/40 border border-border/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-muted-foreground/40";
+const selectCls = "w-full px-3 py-2.5 bg-muted/40 border border-border/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none";
 
 // ═══════════════════════════════════════════════════════
 // MAIN COMPONENT
@@ -577,7 +586,169 @@ export default function AdminInvoices() {
   };
 
   // ═══════════════════════════════════════════════════
-  // PREVIEW RENDER — uses actual uploaded images
+  // BRANDED INVOICE CONTENT (shared between templates)
+  // ═══════════════════════════════════════════════════
+  const renderInvoiceContent = (branded: boolean) => {
+    const tealColor = '#00838f';
+    const tealBorder = '#00bcd4';
+    
+    return (
+      <div style={{ zIndex: 1 }} className="relative">
+        {/* Title Row — per Stone World guide: left = doc type, right = invoice details */}
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h1 className="text-lg font-black uppercase tracking-[0.12em]" style={{ color: tealColor }}>
+              {INVOICE_TYPES.find(x => x.value === editing?.invoice_type)?.label || 'Quotation'}
+            </h1>
+            <p className="text-[10px] font-semibold text-slate-600 mt-0.5">{editing?.invoice_number}</p>
+          </div>
+          <div className="text-right space-y-0.5">
+            <div className="flex items-center justify-end gap-2 text-[10px]">
+              <span className="text-slate-400 font-semibold">Date:</span>
+              <span className="text-slate-700">{new Date(editing?.created_at || Date.now()).toLocaleDateString('en-IN')}</span>
+            </div>
+            {editing?.due_date && (
+              <div className="flex items-center justify-end gap-2 text-[10px]">
+                <span className="text-slate-400 font-semibold">Due:</span>
+                <span className="text-slate-700">{new Date(editing.due_date).toLocaleDateString('en-IN')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Teal divider */}
+        <div className="h-[1.5px] w-full mb-4" style={{ background: tealBorder }} />
+
+        {/* Parties Row — 2-column: Bill To | From */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="p-3 rounded-lg" style={{ background: '#f0fafb' }}>
+            <p className="text-[8px] uppercase font-black text-slate-400 tracking-[0.15em] mb-1">Bill To</p>
+            <p className="font-bold text-[12px] text-slate-800">{editing?.customer_name}</p>
+            {editing?.customer_address && <p className="text-[10px] text-slate-500 mt-0.5 leading-snug">{editing.customer_address}</p>}
+            {editing?.customer_gstin && <p className="text-[10px] text-slate-500">GSTIN: {editing.customer_gstin}</p>}
+            {editing?.customer_phone && <p className="text-[10px] text-slate-500">{editing.customer_phone}</p>}
+            {editing?.customer_email && <p className="text-[10px] text-slate-500">{editing.customer_email}</p>}
+          </div>
+          <div className="p-3 rounded-lg" style={{ background: '#f0fafb' }}>
+            <p className="text-[8px] uppercase font-black text-slate-400 tracking-[0.15em] mb-1">From</p>
+            <p className="font-bold text-[11px] text-slate-700">{COMPANY_INFO.name}</p>
+            <p className="text-[10px] text-slate-500">{COMPANY_INFO.address}</p>
+            <p className="text-[10px] text-slate-500">GSTIN: {editing?.company_gstin}</p>
+            <p className="text-[10px] text-slate-500">{COMPANY_INFO.phone} | {COMPANY_INFO.email}</p>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-[0.5px] w-full bg-slate-200 mb-3" />
+
+        {/* Line Items Table — per guide: #, Description, HSN, Qty, Unit, Rate, GST%, Amount */}
+        <table className="w-full text-[10px] mb-3">
+          <thead>
+            <tr style={{ borderBottom: `2px solid ${tealBorder}30`, color: tealColor }}>
+              <th className="text-left py-2 px-1.5 font-bold w-5">#</th>
+              <th className="text-left py-2 px-1.5 font-bold">Description</th>
+              <th className="text-left py-2 px-1.5 font-bold w-12">HSN</th>
+              <th className="text-right py-2 px-1.5 font-bold w-10">Qty</th>
+              <th className="text-center py-2 px-1.5 font-bold w-10">Unit</th>
+              <th className="text-right py-2 px-1.5 font-bold w-16">Rate (₹)</th>
+              <th className="text-right py-2 px-1.5 font-bold w-10">GST%</th>
+              <th className="text-right py-2 px-1.5 font-bold w-20">Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, i) => (
+              <tr key={i} className="border-b border-slate-100/80" style={i % 2 === 1 ? { background: '#f8fafb' } : {}}>
+                <td className="py-1.5 px-1.5 text-slate-400">{i + 1}</td>
+                <td className="py-1.5 px-1.5 font-medium text-slate-800">{item.description}</td>
+                <td className="py-1.5 px-1.5" style={{ color: tealColor }}>{item.hsn_code}</td>
+                <td className="py-1.5 px-1.5 text-right text-slate-600">{item.quantity}</td>
+                <td className="py-1.5 px-1.5 text-center text-slate-400">{item.unit}</td>
+                <td className="py-1.5 px-1.5 text-right text-slate-600">{fmt(item.rate)}</td>
+                <td className="py-1.5 px-1.5 text-right text-slate-400">{item.tax_rate}%</td>
+                <td className="py-1.5 px-1.5 text-right font-semibold text-slate-800">{fmt(item.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Totals — right-aligned per guide */}
+        <div className="flex justify-end mb-3">
+          <div className="w-60 space-y-0.5 text-[10px]">
+            <div className="flex justify-between text-slate-500 py-0.5">
+              <span>Subtotal</span>
+              <span className="font-medium text-slate-700">₹{fmt(editing?.subtotal || 0)}</span>
+            </div>
+            {(editing?.discount_amount || 0) > 0 && (
+              <div className="flex justify-between text-rose-500 py-0.5">
+                <span>Discount ({editing?.discount_percent}%)</span>
+                <span>-₹{fmt(editing?.discount_amount || 0)}</span>
+              </div>
+            )}
+            {(editing?.cgst_amount || 0) > 0 && (
+              <div className="flex justify-between text-slate-500 py-0.5">
+                <span>CGST ({editing?.cgst_rate}%)</span>
+                <span>₹{fmt(editing?.cgst_amount || 0)}</span>
+              </div>
+            )}
+            {(editing?.sgst_amount || 0) > 0 && (
+              <div className="flex justify-between text-slate-500 py-0.5">
+                <span>SGST ({editing?.sgst_rate}%)</span>
+                <span>₹{fmt(editing?.sgst_amount || 0)}</span>
+              </div>
+            )}
+            {(editing?.igst_amount || 0) > 0 && (
+              <div className="flex justify-between text-slate-500 py-0.5">
+                <span>IGST ({editing?.igst_rate}%)</span>
+                <span>₹{fmt(editing?.igst_amount || 0)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-[12px] pt-1.5 mt-1 text-slate-900" style={{ borderTop: `2px solid ${tealBorder}` }}>
+              <span>Grand Total</span>
+              <span>₹{fmt(editing?.grand_total || 0)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Amount in words */}
+        {editing?.amount_in_words && (
+          <p className="text-[9px] italic text-slate-400 mb-3">Amount in words: {editing.amount_in_words}</p>
+        )}
+
+        {/* Bank Details + Terms + Signature — 3-column per guide */}
+        <div className="h-[0.5px] w-full bg-slate-200 mb-3" />
+        <div className="grid grid-cols-3 gap-3 text-[9px] mb-3">
+          <div>
+            <p className="font-black uppercase text-slate-400 tracking-[0.1em] mb-1">Bank Details</p>
+            <p className="text-slate-600">Bank: {BANK_DETAILS.bank}</p>
+            <p className="text-slate-600">A/C No.: {BANK_DETAILS.account}</p>
+            <p className="text-slate-600">IFSC: {BANK_DETAILS.ifsc}</p>
+            <p className="text-slate-600">Branch: {BANK_DETAILS.branch}</p>
+          </div>
+          <div>
+            {editing?.payment_terms && (
+              <p className="text-slate-500 mb-1"><span className="font-bold uppercase text-slate-400">Payment: </span>{editing.payment_terms}</p>
+            )}
+            {editing?.terms && (
+              <div>
+                <p className="font-black uppercase text-slate-400 tracking-[0.1em] mb-0.5">Terms & Conditions</p>
+                <p className="text-slate-500 whitespace-pre-wrap leading-snug">{editing.terms}</p>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col items-end justify-end">
+            <div className="text-center">
+              <div className="w-32 h-[0.5px] bg-slate-300 mb-1 mt-6" />
+              <p className="font-bold text-slate-500">Authorised Signatory</p>
+              <p className="text-slate-400">Stone World</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════
+  // PREVIEW RENDER
   // ═══════════════════════════════════════════════════
   const renderPreview = () => {
     const t = template;
@@ -616,117 +787,35 @@ export default function AdminInvoices() {
           id="invoice-print"
           style={{ width: '794px', minHeight: '1122px', aspectRatio: '794/1122', margin: '0 auto' }}
         >
-          {/* Custom BG — full visibility behind everything */}
+          {/* Custom BG */}
           {customBg && (
             <img src={customBg} alt="" className="absolute inset-0 w-full h-full object-cover z-0" style={{ opacity: 1 }} />
           )}
 
           {useBrandedLayout ? (
             /* ═══ BRANDED TEMPLATE — per Stone World Agent Guide ═══
-             * A4 = 794×1122px on screen
-             * Header: full width, natural height, flex-shrink: 0
-             * Footer: full width, natural height, flex-shrink: 0, margin-top: auto
-             * Watermark: centered in content area only, opacity 0.08
-             * Content: safe zone with px-[57pt] between header & footer
+             * Strict vertical flex: Header → Content → Footer
+             * Header/Footer: flex-shrink: 0
+             * Content: flex: 1 1 auto with padding
+             * Watermark: centered in content area, 8% opacity
              */
             <div className="relative w-full flex flex-col" style={{ minHeight: '1122px' }}>
-              {/* Header image — fixed at top, never overlaps */}
+              {/* Header image — fixed at top */}
               <div style={{ flexShrink: 0 }}>
                 <img src="/images/invoice-header.png" alt="" className="w-full h-auto block" />
               </div>
 
-              {/* Content zone — fills remaining space between header & footer */}
-              <div className="relative" style={{ flex: '1 1 auto', padding: '10px 40px', overflow: 'hidden' }}>
-                {/* Watermark — centered within content area only */}
+              {/* Content zone — fills space between header & footer */}
+              <div className="relative" style={{ flex: '1 1 auto', padding: '12px 40px', overflow: 'hidden' }}>
+                {/* Watermark — centered within content area, 8% opacity */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
                   <img src="/images/invoice-watermark.png" alt="" style={{ width: '55%', height: 'auto', opacity: 0.08 }} />
                 </div>
 
-                {/* Content on top of watermark */}
-                <div className="relative" style={{ zIndex: 1 }}>
-                  {/* Bill To + Document Type */}
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-[9px] uppercase font-bold text-slate-400 tracking-[0.15em]">Bill To</p>
-                      <p className="font-bold text-[13px] text-slate-800 mt-0.5">{editing?.customer_name}</p>
-                      {editing?.customer_address && <p className="text-[10px] text-slate-500 mt-0.5 leading-snug">{editing.customer_address}</p>}
-                      {editing?.customer_gstin && <p className="text-[10px] text-slate-500">GSTIN: {editing.customer_gstin}</p>}
-                    </div>
-                    <div className="text-right">
-                      <h1 className="text-base font-black uppercase tracking-[0.15em] text-[#00838f]">
-                        {INVOICE_TYPES.find(x => x.value === editing?.invoice_type)?.label || 'Quotation'}
-                      </h1>
-                      <p className="text-[10px] font-semibold text-slate-600 mt-0.5">{editing?.invoice_number}</p>
-                      <p className="text-[10px] text-slate-400">Date: {new Date(editing?.created_at || Date.now()).toLocaleDateString('en-IN')}</p>
-                      {editing?.due_date && <p className="text-[10px] text-slate-400">Due: {new Date(editing.due_date).toLocaleDateString('en-IN')}</p>}
-                    </div>
-                  </div>
-
-                  {/* From info */}
-                  <div className="flex justify-between items-start mb-3 pb-2 border-b border-slate-200/60">
-                    <div>
-                      {editing?.customer_phone && <p className="text-[10px] text-slate-500">{editing.customer_phone}</p>}
-                      {editing?.customer_email && <p className="text-[10px] text-slate-500">{editing.customer_email}</p>}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[9px] uppercase font-bold text-slate-400 tracking-[0.15em]">From</p>
-                      <p className="font-bold text-[10px] text-slate-700">{COMPANY_INFO.name}</p>
-                      <p className="text-[10px] text-slate-500">{COMPANY_INFO.address}</p>
-                    </div>
-                  </div>
-
-                  {/* Items Table */}
-                  <table className="w-full text-[10px] mb-3">
-                    <thead>
-                      <tr className="border-b-2 border-[#00bcd4]/30 text-[#00838f]">
-                        <th className="text-left py-1.5 px-1.5 font-bold w-6">#</th>
-                        <th className="text-left py-1.5 px-1.5 font-bold">Description</th>
-                        <th className="text-left py-1.5 px-1.5 font-bold w-12">HSN</th>
-                        <th className="text-right py-1.5 px-1.5 font-bold w-14">Qty</th>
-                        <th className="text-right py-1.5 px-1.5 font-bold w-16">Rate (₹)</th>
-                        <th className="text-right py-1.5 px-1.5 font-bold w-20">Amount (₹)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((item, i) => (
-                        <tr key={i} className="border-b border-slate-100/80">
-                          <td className="py-1 px-1.5 text-slate-400">{i + 1}</td>
-                          <td className="py-1 px-1.5 font-medium text-slate-800">{item.description}</td>
-                          <td className="py-1 px-1.5 text-[#00838f]">{item.hsn_code}</td>
-                          <td className="py-1 px-1.5 text-right text-slate-600">{item.quantity} {item.unit}</td>
-                          <td className="py-1 px-1.5 text-right text-slate-600">{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                          <td className="py-1 px-1.5 text-right font-semibold text-slate-800">{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-
-                  {/* Totals */}
-                  <div className="flex justify-end mb-2">
-                    <div className="w-56 space-y-0.5 text-[10px]">
-                      <div className="flex justify-between text-slate-500"><span>Subtotal</span><span className="font-medium text-slate-700">₹{(editing?.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                      {(editing?.discount_amount || 0) > 0 && <div className="flex justify-between text-rose-500"><span>Discount ({editing?.discount_percent}%)</span><span>-₹{(editing?.discount_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                      {(editing?.cgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>CGST ({editing?.cgst_rate}%)</span><span>₹{(editing?.cgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                      {(editing?.sgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>SGST ({editing?.sgst_rate}%)</span><span>₹{(editing?.sgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                      {(editing?.igst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>IGST ({editing?.igst_rate}%)</span><span>₹{(editing?.igst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                      <div className="flex justify-between font-bold text-[11px] pt-1 mt-0.5 border-t-2 border-[#00bcd4] text-slate-900">
-                        <span>Grand Total</span><span>₹{(editing?.grand_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                      </div>
-                    </div>
-                  </div>
-                  {editing?.amount_in_words && <p className="text-[9px] italic text-slate-400 mb-2">Amount in words: {editing.amount_in_words}</p>}
-
-                  {/* Terms */}
-                  {(editing?.terms || editing?.payment_terms) && (
-                    <div className="pt-2 border-t border-slate-100 space-y-1">
-                      {editing?.payment_terms && <p className="text-[9px] text-slate-500"><span className="font-bold uppercase text-slate-400">Payment: </span>{editing.payment_terms}</p>}
-                      {editing?.terms && <div><p className="text-[8px] font-black uppercase text-slate-400 mb-0.5">Terms & Conditions</p><p className="text-[9px] text-slate-500 whitespace-pre-wrap leading-snug">{editing.terms}</p></div>}
-                    </div>
-                  )}
-                </div>
+                {renderInvoiceContent(true)}
               </div>
 
-              {/* Footer image — fixed at bottom, never overlaps */}
+              {/* Footer image — fixed at bottom */}
               <div style={{ flexShrink: 0, marginTop: 'auto' }}>
                 <img src="/images/invoice-bottom.png" alt="" className="w-full h-auto block" />
               </div>
@@ -756,70 +845,9 @@ export default function AdminInvoices() {
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="flex-1 px-8">
-                <div className="py-4 grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50/80">
-                  <div>
-                    <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">Bill To</p>
-                    <p className="font-bold text-sm text-slate-800">{editing?.customer_name}</p>
-                    {editing?.customer_address && <p className="text-xs text-slate-500 mt-0.5">{editing.customer_address}</p>}
-                    {editing?.customer_gstin && <p className="text-xs text-slate-500">GSTIN: {editing.customer_gstin}</p>}
-                  </div>
-                  <div>
-                    <p className="text-[10px] uppercase font-bold text-slate-400 mb-1">From</p>
-                    <p className="font-bold text-xs text-slate-700">{COMPANY_INFO.name}</p>
-                    <p className="text-xs text-slate-500">{COMPANY_INFO.address}</p>
-                  </div>
-                </div>
-
-                <div className="py-4 overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className={t === 'modern' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}>
-                        <th className="text-left py-2.5 px-3 font-semibold rounded-l-lg text-[11px]">#</th>
-                        <th className="text-left py-2.5 px-3 font-semibold text-[11px]">Description</th>
-                        <th className="text-left py-2.5 px-3 font-semibold text-[11px]">HSN</th>
-                        <th className="text-right py-2.5 px-3 font-semibold text-[11px]">Qty</th>
-                        <th className="text-right py-2.5 px-3 font-semibold text-[11px]">Rate (₹)</th>
-                        <th className="text-right py-2.5 px-3 font-semibold rounded-r-lg text-[11px]">Amount (₹)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((item, i) => (
-                        <tr key={i} className="border-b border-slate-100">
-                          <td className="py-2.5 px-3 text-slate-400 text-xs">{i + 1}</td>
-                          <td className="py-2.5 px-3 font-medium text-slate-800 text-xs">{item.description}</td>
-                          <td className="py-2.5 px-3 text-slate-400 text-xs">{item.hsn_code}</td>
-                          <td className="py-2.5 px-3 text-right text-slate-600 text-xs">{item.quantity} {item.unit}</td>
-                          <td className="py-2.5 px-3 text-right text-slate-600 text-xs">{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                          <td className="py-2.5 px-3 text-right font-semibold text-slate-800 text-xs">{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="pb-4 flex justify-end">
-                  <div className="w-72 space-y-1.5 text-sm">
-                    <div className="flex justify-between text-slate-500"><span>Subtotal</span><span className="font-medium text-slate-700">₹{(editing?.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                    {(editing?.discount_amount || 0) > 0 && <div className="flex justify-between text-rose-500"><span>Discount ({editing?.discount_percent}%)</span><span>-₹{(editing?.discount_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                    {(editing?.cgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>CGST ({editing?.cgst_rate}%)</span><span>₹{(editing?.cgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                    {(editing?.sgst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>SGST ({editing?.sgst_rate}%)</span><span>₹{(editing?.sgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                    {(editing?.igst_amount || 0) > 0 && <div className="flex justify-between text-slate-500"><span>IGST ({editing?.igst_rate}%)</span><span>₹{(editing?.igst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                    <div className={`flex justify-between font-bold text-lg pt-2 mt-1 border-t-2 ${t === 'modern' ? 'border-slate-800' : 'border-slate-300'} text-slate-800`}>
-                      <span>Grand Total</span><span>₹{(editing?.grand_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                    </div>
-                  </div>
-                </div>
-                {editing?.amount_in_words && <p className="text-[11px] italic text-slate-400 mb-3">Amount in words: {editing.amount_in_words}</p>}
-
-                {(editing?.terms || editing?.notes || editing?.payment_terms) && (
-                  <div className="py-4 border-t border-slate-100">
-                    {editing?.payment_terms && <p className="text-[11px] text-slate-500 mb-2"><span className="font-semibold uppercase text-slate-400">Payment: </span>{editing.payment_terms}</p>}
-                    {editing?.terms && <div className="mb-2"><p className="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Terms & Conditions</p><p className="text-[11px] text-slate-500 whitespace-pre-wrap">{editing.terms}</p></div>}
-                    {editing?.notes && <div><p className="text-[10px] font-bold uppercase text-slate-400 mb-0.5">Notes</p><p className="text-[11px] text-slate-500 whitespace-pre-wrap">{editing.notes}</p></div>}
-                  </div>
-                )}
+              {/* Content using shared renderer */}
+              <div className="flex-1 px-8 py-4">
+                {renderInvoiceContent(false)}
               </div>
 
               {/* Footer */}
@@ -869,7 +897,7 @@ export default function AdminInvoices() {
           </div>
         </div>
 
-        {/* Mobile Tabs */}
+        {/* Tab navigation */}
         <div className="flex gap-1 p-1 bg-muted/50 rounded-xl mb-5 overflow-x-auto">
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
@@ -884,7 +912,7 @@ export default function AdminInvoices() {
         {/* Tab: Details */}
         {tab === 'details' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/30">
+            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/20">
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><FileText size={12} /> Document</h3>
               <Field label="Type" icon={Layout}>
                 <select value={editing.invoice_type || 'quotation'} onChange={e => setEditing({ ...editing, invoice_type: e.target.value, invoice_number: generateNumber(e.target.value) })} className={selectCls}>
@@ -912,7 +940,7 @@ export default function AdminInvoices() {
               </Field>
             </div>
 
-            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/30">
+            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/20">
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2"><Building2 size={12} /> Customer</h3>
               <Field label="Customer Name *" icon={Building2} hint={FIELD_HINTS.customer_name}>
                 <input value={editing.customer_name || ''} onChange={e => setEditing({ ...editing, customer_name: e.target.value })} placeholder={FIELD_HINTS.customer_name} className={inputCls} />
@@ -955,7 +983,7 @@ export default function AdminInvoices() {
                 onDragStart={() => handleDragStart(i)}
                 onDragOver={e => handleDragOver(e, i)}
                 onDragEnd={handleDragEnd}
-                className={`bg-card rounded-2xl border border-border/30 p-4 space-y-3 transition-all ${dragIndex === i ? 'opacity-50 scale-[0.98]' : ''}`}
+                className={`bg-card rounded-2xl border border-border/20 p-4 space-y-3 transition-all ${dragIndex === i ? 'opacity-50 scale-[0.98]' : ''}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1016,7 +1044,7 @@ export default function AdminInvoices() {
                   </Field>
                   <Field label="Amount">
                     <div className="flex items-center h-[42px] px-3 bg-muted/30 rounded-xl text-sm font-semibold text-foreground">
-                      ₹{item.total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      ₹{fmt(item.total)}
                     </div>
                   </Field>
                 </div>
@@ -1024,10 +1052,20 @@ export default function AdminInvoices() {
             ))}
 
             {items.length === 0 && (
-              <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/40">
+              <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/30">
                 <Package size={28} className="mx-auto text-muted-foreground/30 mb-2" />
                 <p className="text-sm text-muted-foreground">No items yet</p>
                 <button onClick={addItem} className="mt-2 text-primary text-sm hover:underline">Add your first item</button>
+              </div>
+            )}
+
+            {/* Quick summary at bottom of items tab */}
+            {items.length > 0 && (
+              <div className="flex justify-end p-4 bg-muted/30 rounded-2xl">
+                <div className="text-right space-y-1">
+                  <p className="text-xs text-muted-foreground">Items: {items.filter(i => i.description.trim()).length} • Subtotal: <span className="font-semibold text-foreground">₹{fmt(editing.subtotal || 0)}</span></p>
+                  <p className="text-sm font-bold text-foreground">Grand Total: ₹{fmt(editing.grand_total || 0)}</p>
+                </div>
               </div>
             )}
           </div>
@@ -1036,7 +1074,7 @@ export default function AdminInvoices() {
         {/* Tab: Tax & Totals */}
         {tab === 'tax' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/30">
+            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/20">
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Tax Configuration</h3>
               <p className="text-[11px] text-muted-foreground flex items-center gap-1.5"><Info size={11} /> Use CGST+SGST for intra-state, or IGST for inter-state sales.</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1059,16 +1097,17 @@ export default function AdminInvoices() {
               </Field>
             </div>
 
-            <div className="p-5 bg-gradient-to-br from-card to-muted/20 rounded-2xl border border-border/30">
+            <div className="p-5 bg-gradient-to-br from-card to-muted/20 rounded-2xl border border-border/20">
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Summary</h3>
               <div className="space-y-2.5 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">₹{(editing.subtotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>
-                {(editing.discount_amount || 0) > 0 && <div className="flex justify-between text-rose-500"><span>Discount ({editing.discount_percent}%)</span><span>-₹{(editing.discount_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                {(editing.cgst_amount || 0) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">CGST ({editing.cgst_rate}%)</span><span>₹{(editing.cgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                {(editing.sgst_amount || 0) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">SGST ({editing.sgst_rate}%)</span><span>₹{(editing.sgst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
-                {(editing.igst_amount || 0) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">IGST ({editing.igst_rate}%)</span><span>₹{(editing.igst_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></div>}
+                <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span className="font-medium">₹{fmt(editing.subtotal || 0)}</span></div>
+                {(editing.discount_amount || 0) > 0 && <div className="flex justify-between text-rose-500"><span>Discount ({editing.discount_percent}%)</span><span>-₹{fmt(editing.discount_amount || 0)}</span></div>}
+                <div className="flex justify-between"><span className="text-muted-foreground">Taxable Amount</span><span className="font-medium">₹{fmt(editing.taxable_amount || 0)}</span></div>
+                {(editing.cgst_amount || 0) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">CGST ({editing.cgst_rate}%)</span><span>₹{fmt(editing.cgst_amount || 0)}</span></div>}
+                {(editing.sgst_amount || 0) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">SGST ({editing.sgst_rate}%)</span><span>₹{fmt(editing.sgst_amount || 0)}</span></div>}
+                {(editing.igst_amount || 0) > 0 && <div className="flex justify-between"><span className="text-muted-foreground">IGST ({editing.igst_rate}%)</span><span>₹{fmt(editing.igst_amount || 0)}</span></div>}
                 <div className="flex justify-between font-bold text-lg pt-3 mt-2 border-t-2 border-primary/20">
-                  <span>Grand Total</span><span className="text-primary">₹{(editing.grand_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  <span>Grand Total</span><span className="text-primary">₹{fmt(editing.grand_total || 0)}</span>
                 </div>
                 {editing.amount_in_words && <p className="text-[11px] italic text-muted-foreground pt-1">{editing.amount_in_words}</p>}
               </div>
@@ -1079,8 +1118,8 @@ export default function AdminInvoices() {
         {/* Tab: Notes */}
         {tab === 'notes' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/30">
-              <Field label="Payment Terms">
+            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/20">
+              <Field label="Payment Terms" icon={CreditCard}>
                 <input value={editing.payment_terms || ''} onChange={e => setEditing({ ...editing, payment_terms: e.target.value })}
                   placeholder="e.g. Payment due within 15 days" className={inputCls} />
               </Field>
@@ -1090,17 +1129,29 @@ export default function AdminInvoices() {
               </Field>
               <button onClick={() => setEditing({ ...editing, terms: DEFAULT_TERMS })} className="text-[11px] text-primary hover:underline flex items-center gap-1"><RotateCcw size={11} /> Load default terms</button>
             </div>
-            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/30">
-              <Field label="Internal Notes">
+            <div className="space-y-4 p-5 bg-card rounded-2xl border border-border/20">
+              <Field label="Internal Notes" icon={PenLine}>
                 <textarea value={editing.notes || ''} onChange={e => setEditing({ ...editing, notes: e.target.value })}
-                  rows={4} placeholder="Internal notes (won't show on printed invoice unless you want)..." className={inputCls + ' resize-none'} />
+                  rows={4} placeholder="Internal notes (won't appear on invoice)..." className={inputCls + ' resize-none'} />
               </Field>
-              <div className="p-4 bg-muted/30 rounded-xl">
+
+              {/* Bank Details Section */}
+              <div className="p-4 bg-muted/20 rounded-xl">
+                <h4 className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1.5"><Landmark size={12} /> Bank Details (on invoice)</h4>
+                <div className="text-xs text-muted-foreground space-y-0.5">
+                  <p>Bank: {BANK_DETAILS.bank}</p>
+                  <p>A/C: {BANK_DETAILS.account}</p>
+                  <p>IFSC: {BANK_DETAILS.ifsc}</p>
+                  <p>Branch: {BANK_DETAILS.branch}</p>
+                </div>
+              </div>
+
+              <div className="p-4 bg-muted/20 rounded-xl">
                 <h4 className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1.5"><Palette size={12} /> Template</h4>
                 <div className="grid grid-cols-2 gap-2">
                   {TEMPLATES.map(tmpl => (
                     <button key={tmpl.id} onClick={() => setTemplate(tmpl.id)}
-                      className={`p-3 rounded-xl text-left text-sm transition-all ${template === tmpl.id ? 'bg-foreground text-background ring-2 ring-primary' : 'bg-background hover:bg-accent border border-border/40'}`}>
+                      className={`p-3 rounded-xl text-left text-sm transition-all ${template === tmpl.id ? 'bg-foreground text-background ring-2 ring-primary' : 'bg-background hover:bg-accent border border-border/30'}`}>
                       <span className="font-medium">{tmpl.name}</span>
                       <span className="block text-[10px] opacity-60">{tmpl.desc}</span>
                     </button>
@@ -1122,7 +1173,7 @@ export default function AdminInvoices() {
         )}
 
         {/* Bottom Actions (Mobile) */}
-        <div className="flex flex-wrap gap-3 mt-6 pt-5 border-t border-border/30 sm:hidden">
+        <div className="flex flex-wrap gap-3 mt-6 pt-5 border-t border-border/20 sm:hidden">
           <button onClick={handleSave} disabled={saving}
             className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-foreground text-background rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-all">
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save
@@ -1173,13 +1224,13 @@ export default function AdminInvoices() {
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search by customer or invoice number..." className="w-full pl-10 pr-4 py-2.5 bg-muted/50 border border-border/30 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+            placeholder="Search by customer or invoice number..." className="w-full pl-10 pr-4 py-2.5 bg-muted/40 border border-border/20 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
         </div>
-        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="px-3 py-2.5 bg-muted/50 border border-border/30 rounded-xl text-sm">
+        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="px-3 py-2.5 bg-muted/40 border border-border/20 rounded-xl text-sm">
           <option value="all">All Types</option>
           {INVOICE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2.5 bg-muted/50 border border-border/30 rounded-xl text-sm">
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2.5 bg-muted/40 border border-border/20 rounded-xl text-sm">
           <option value="all">All Status</option>
           {['draft', 'sent', 'paid', 'cancelled'].map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
         </select>
@@ -1193,7 +1244,7 @@ export default function AdminInvoices() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 bg-card rounded-2xl border border-dashed border-border/30">
+        <div className="text-center py-16 bg-card rounded-2xl border border-dashed border-border/20">
           <FileText size={36} className="mx-auto text-muted-foreground/20 mb-3" />
           <p className="text-muted-foreground text-sm mb-1">No invoices yet</p>
           <p className="text-muted-foreground/60 text-[12px] mb-4">Create your first quotation or invoice</p>
@@ -1206,7 +1257,7 @@ export default function AdminInvoices() {
           {filtered.map(inv => {
             const typeInfo = INVOICE_TYPES.find(t => t.value === inv.invoice_type);
             return (
-              <div key={inv.id} className="flex items-center gap-3 p-4 bg-card rounded-2xl border border-border/20 hover:border-border/40 hover:shadow-sm transition-all group">
+              <div key={inv.id} className="flex items-center gap-3 p-4 bg-card rounded-2xl border border-border/15 hover:border-border/30 hover:shadow-sm transition-all group">
                 <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-lg shrink-0 ${typeInfo?.color || 'bg-muted'}`}>
                   {typeInfo?.icon || '📋'}
                 </div>
@@ -1227,7 +1278,7 @@ export default function AdminInvoices() {
                   <button onClick={() => loadInvoiceForEdit(inv)} className="p-2 hover:bg-muted rounded-xl transition-colors" title="Edit"><Edit3 size={13} /></button>
                   <button onClick={() => duplicateInvoice(inv)} className="p-2 hover:bg-muted rounded-xl transition-colors" title="Duplicate"><Copy size={13} /></button>
                   <button onClick={() => exportTallyXML(inv)} className="p-2 hover:bg-muted rounded-xl transition-colors" title="Tally XML"><FileDown size={13} /></button>
-                  <button onClick={() => handleDelete(inv.id)} className="p-2 text-destructive/60 hover:text-destructive hover:bg-destructive/5 rounded-xl transition-colors" title="Delete"><Trash2 size={13} /></button>
+                  <button onClick={() => handleDelete(inv.id)} className="p-2 hover:bg-destructive/10 text-destructive/60 hover:text-destructive rounded-xl transition-colors" title="Delete"><Trash2 size={13} /></button>
                 </div>
               </div>
             );
